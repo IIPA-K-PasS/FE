@@ -36,21 +36,22 @@
 
 ---
 
-### **🌿 Branch 전략**
+## 🌿 Branch 전략
 
-본 프로젝트는 **Gitflow 브랜치 전략**을 따릅니다.
+본 프로젝트는 Gitflow 브랜치 전략을 따릅니다.
 
-- `main`: 배포 가능한 안정적인 브랜치
-- `release`: 배포 전 QA를 위한 브랜치
-- `develop`: 통합 개발 브랜치
-- `feature/#issue_number`: 기능 개발 단위별 브랜치
-- `hotfix`: `main` 브랜치의 긴급 버그 수정 브랜치
+<img width="600" height="800" alt="git" src="https://github.com/user-attachments/assets/6754c9a1-072e-4b74-b10d-a885f6887de4" />
 
-#### **개발 흐름**
+- `main`: 배포 가능한 단위의 브랜치
+- `release`: 배포 전 테스트용 브랜치
+- `develop`: 개발 중인 브랜치
+- `feature/#issue_number`: 개발 단위별 브랜치
+- `hotfix`: `master` 브랜치의 긴급 버그 수정 브랜치
 
-1. 개발할 기능에 대한 이슈 등록 후 번호 발급.
-2. `develop` 브랜치에서 분기하여 `feature/#issue_number` 브랜치 생성 및 작업.
-3. 작업 완료 후 Pull Request 작성 및 리뷰 후 `develop` 브랜치에 병합.
+### 개발 흐름
+1. 개발할 기능에 대한 이슈 등록 후 번호 발급  
+2. `develop` 브랜치에서 분기 → `feature/#issue_number` 브랜치 생성 및 작업  
+3. 작업 완료 후 Pull Request 작성 → 리뷰 후 병합  
 
 ---
 
