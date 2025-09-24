@@ -1,70 +1,25 @@
 import 'package:flutter/material.dart';
 
-class ChallengePage extends StatefulWidget {
-  const ChallengePage({super.key});
+class ChallengeCard extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final Color backgroundColor;
+  final String title;
+  final String subtitle;
+  final String points;
 
-  @override
-  State<ChallengePage> createState() => _ChallengePageState();
-}
+  const ChallengeCard({
+    super.key,
+    required this.icon,
+    required this.iconColor,
+    required this.backgroundColor,
+    required this.title,
+    required this.subtitle,
+    required this.points,
+  });
 
-class _ChallengePageState extends State<ChallengePage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("그린 챌린지",
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              )
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "작은 실천으로 세상을 바꾸는 습관",
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: Colors.grey[600],
-              ),
-
-            ),
-            const SizedBox(height: 24), // 부제목과 챌린지 목록 사이 간격
-            _buildChallengeCard(
-              context,
-              icon: Icons.recycling,
-              iconColor: Colors.blue.shade700,
-              backgroundColor: Colors.blue.shade100,
-              title: "페트병 라벨 떼고 버리기",
-              subtitle: "자원 순환 • 1,234명 참여",
-              points: "+20P",
-            ),
-            const SizedBox(height: 16), // 카드 사이 간격
-            _buildChallengeCard(
-              context,
-              icon: Icons.power_off,
-              iconColor: Colors.amber.shade800,
-              backgroundColor: Colors.amber.shade100,
-              title: "안 쓰는 코드 뽑기",
-              subtitle: "에너지 절약 • 2,580명 참여",
-              points: "+10P",
-            ),
-          ]
-        ),
-      )
-    );
-  }
-}
-
-Widget _buildChallengeCard(
-  BuildContext context,{
-required IconData icon,
-required Color iconColor,
-required Color backgroundColor,
-required String title,
-required String subtitle,
-required String points,
-}){
   return Card(
     elevation: 1, // 카드에 부드러운 그림자 효과
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -126,4 +81,4 @@ required String points,
     ),
   );
 }
-
+}

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'pages/home_page.dart';
-import 'pages/challenge_page.dart';
-import 'pages/tips_page.dart';
-import 'pages/profile_page.dart';
+import 'features/home/presentation/home_screen.dart';
+import 'features/challenge/presentation/challenge_page.dart';
+import 'features/tips/presentation/tips_screen.dart';
+import 'features/profile/presentation/profile_screen.dart';
 
 void main() {
   runApp(const MyApp());
