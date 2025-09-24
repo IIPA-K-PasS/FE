@@ -5,11 +5,7 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('마이페이지'),
-        backgroundColor: Colors.purple[100],
-      ),
+    return const Scaffold(
       body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

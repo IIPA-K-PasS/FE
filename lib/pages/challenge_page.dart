@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 
-class ChallengePage extends StatelessWidget {
+class ChallengePage extends StatefulWidget {
   const ChallengePage({super.key});
 
   @override
+  State<ChallengePage> createState() => _ChallengePageState();
+}
+
+class _ChallengePageState extends State<ChallengePage> {
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('챌린지'),
-        backgroundColor: Colors.green[100],
-      ),
+    return const Scaffold(
       body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
