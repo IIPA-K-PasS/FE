@@ -1,27 +1,23 @@
 import 'package:flutter/material.dart';
 
-class ChallengePage extends StatelessWidget {
-  const ChallengePage({super.key});
+class ProfilePage extends StatelessWidget {
+  const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('챌린지'),
-        backgroundColor: Colors.green[100],
-      ),
+    return const Scaffold(
       body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.emoji_events,
+              Icons.person,
               size: 80,
-              color: Colors.green,
+              color: Colors.purple,
             ),
             SizedBox(height: 20),
             Text(
-              '챌린지 페이지',
+              '마이페이지',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -29,7 +25,7 @@ class ChallengePage extends StatelessWidget {
             ),
             SizedBox(height: 10),
             Text(
-              '새로운 도전을 시작해보세요!',
+              '내 정보를 관리해보세요!',
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey,

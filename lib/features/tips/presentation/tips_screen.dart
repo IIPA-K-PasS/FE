@@ -5,12 +5,8 @@ class TipsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('자취꿀팁'),
-        backgroundColor: Colors.orange[100],
-      ),
-      body: const Center(
+    return const Scaffold(
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
