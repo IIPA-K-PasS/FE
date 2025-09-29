@@ -24,12 +24,10 @@ class AISavingForecastCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 제목
-          const Text(
+          Text(
             '오늘의 AI 절약 예보',
-            style: TextStyle(
-              fontSize: 18,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
             ),
           ),
           
@@ -38,25 +36,31 @@ class AISavingForecastCard extends StatelessWidget {
           // 위치 및 날씨 정보
           Row(
             children: [
-              Icon(Icons.location_on, color: Colors.grey[600], size: 20),
+              Icon(
+                Icons.location_on, 
+                color: Theme.of(context).colorScheme.onSurfaceVariant, 
+                size: 20,
+              ),
               const SizedBox(width: 8),
               Text(
                 '위치 정보 없음',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
               const Spacer(),
               Text(
                 '24°C 맑음',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
               const SizedBox(width: 8),
-              Icon(Icons.wb_sunny, color: Colors.orange[400], size: 20),
+              Icon(
+                Icons.wb_sunny, 
+                color: Colors.orange[400], 
+                size: 20,
+              ),
             ],
           ),
           

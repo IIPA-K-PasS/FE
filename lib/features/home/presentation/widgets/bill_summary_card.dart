@@ -71,31 +71,43 @@ class BillSummaryCard extends StatelessWidget {
           const SizedBox(height: 20),
           
           // 고지서 촬영 버튼
-          Container(
+          SizedBox(
             width: double.infinity,
             height: 50,
-            decoration: BoxDecoration(
-              color: Colors.teal[400],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.camera_alt,
-                  color: Colors.white,
-                  size: 20,
+            child: Semantics(
+              label: '고지서 촬영 및 등록 버튼',
+              button: true,
+              child: ElevatedButton(
+                onPressed: () {
+                  // TODO: 고지서 촬영 기능 구현
+                  print('고지서 촬영 버튼 클릭됨');
+                },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal[400],
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(width: 8),
-                const Text(
-                  '고지서 촬영/등록하기',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.camera_alt,
+                    size: 20,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  const Text(
+                    '고지서 촬영/등록하기',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              ),
             ),
           ),
         ],
