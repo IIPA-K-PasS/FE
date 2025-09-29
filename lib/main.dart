@@ -62,7 +62,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         titleSpacing: 40,
         // 제목 위젯
         title: Text(
-          'Billow',
+          'Eco-Wise',
           style: TextStyle(
             color: Theme.of(context).primaryColor, // 테마의 기본 색상(teal) 사용
             fontWeight: FontWeight.bold,
