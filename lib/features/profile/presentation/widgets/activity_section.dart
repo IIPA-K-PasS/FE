@@ -20,23 +20,31 @@ class ActivitySection extends StatelessWidget {
         const SizedBox(height: 12),
         
         // 찜한 꿀팁
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                spreadRadius: 1,
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
+        Material(
+          color: Colors.transparent,
           child: Semantics(
             label: '내가 찜한 꿀팁',
             button: true,
-            child: ListTile(
+            child: Ink(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    spreadRadius: 1,
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () {
+                  // TODO: 찜한 꿀팁 페이지로 이동
+                  print('찜한 꿀팁 클릭됨');
+                },
+                child: ListTile(
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 8,
@@ -60,15 +68,13 @@ class ActivitySection extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              trailing: Icon(
+                  trailing: Icon(
                 Icons.arrow_forward_ios,
                 color: Colors.grey[400],
                 size: 16,
               ),
-              onTap: () {
-                // TODO: 찜한 꿀팁 페이지로 이동
-                print('찜한 꿀팁 클릭됨');
-              },
+                ),
+              ),
             ),
           ),
         ),
@@ -76,23 +82,31 @@ class ActivitySection extends StatelessWidget {
         const SizedBox(height: 8),
         
         // 완료한 챌린지
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                spreadRadius: 1,
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
+        Material(
+          color: Colors.transparent,
           child: Semantics(
             label: '완료한 챌린지',
             button: true,
-            child: ListTile(
+            child: Ink(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    spreadRadius: 1,
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () {
+                  // TODO: 완료한 챌린지 페이지로 이동
+                  print('완료한 챌린지 클릭됨');
+                },
+                child: ListTile(
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 8,
@@ -116,15 +130,13 @@ class ActivitySection extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              trailing: Icon(
+                  trailing: Icon(
                 Icons.arrow_forward_ios,
                 color: Colors.grey[400],
                 size: 16,
               ),
-              onTap: () {
-                // TODO: 완료한 챌린지 페이지로 이동
-                print('완료한 챌린지 클릭됨');
-              },
+                ),
+              ),
             ),
           ),
         ),

@@ -73,26 +73,31 @@ class ProfileInfoCard extends StatelessWidget {
                         Semantics(
                           label: '프로필 수정 버튼',
                           button: true,
-                          child: InkWell(
-                            onTap: () {
-                              // TODO: 프로필 수정 기능 구현
-                              print('프로필 수정 버튼 클릭됨');
-                            },
-                            borderRadius: BorderRadius.circular(16),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[200],
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Text(
-                                '프로필 수정',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Colors.grey[700],
-                                  fontWeight: FontWeight.w500,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                // TODO: 프로필 수정 기능 구현
+                                print('프로필 수정 버튼 클릭됨');
+                              },
+                              borderRadius: BorderRadius.circular(16),
+                              child: Ink(
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  child: Text(
+                                    '프로필 수정',
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Colors.grey[700],
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
