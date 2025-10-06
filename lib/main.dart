@@ -45,7 +45,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     const HomePage(),
     const ChallengePage(),
     const TipsPage(),
-    const ProfilePage(),
+    const ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {
