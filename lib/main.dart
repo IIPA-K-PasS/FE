@@ -5,8 +5,10 @@ import 'features/challenge/presentation/challenge_screen.dart';
 import 'features/tips/presentation/tips_screen.dart';
 import 'features/profile/presentation/profile_screen.dart';
 import 'features/auth/presentation/auth_test_screen.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
 void main() {
+  KakaoSdk.init(nativeAppKey: 'b70b066e6c735236882c7e05c089e3f6');
   runApp(const MyApp());
 }
 
