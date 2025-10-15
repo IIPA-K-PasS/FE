@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:billow/main.dart';
 
-import '../../../common/animation/slide_route.dart'; // MainNavigationPage를 import
+import '../../../core/animation/slide_route.dart'; // MainNavigationPage를 import
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});

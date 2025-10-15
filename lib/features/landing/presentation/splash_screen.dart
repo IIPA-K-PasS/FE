@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../common/animation/fade_route.dart';
+import '../../../core/animation/fade_route.dart';
 import 'login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
