@@ -1,4 +1,7 @@
+import 'package:billow/common/animation/slide_route.dart';
 import 'package:flutter/material.dart';
+
+import '../neighborhood_setting_screen.dart';
 
 class NeighborhoodComparisonCard extends StatelessWidget {
   const NeighborhoodComparisonCard({super.key});
@@ -55,12 +58,43 @@ class NeighborhoodComparisonCard extends StatelessWidget {
           const SizedBox(height: 16),
           
           // 플레이스홀더 텍스트
-          Center(
+          const Center(
             child: Text(
-              '동네 비교 데이터가 없습니다',
+              '동네 데이터가 없습니다',
               style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[500],
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: Colors.black54,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 24,),
+
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  SlideRoute(page: NeighborhoodSettingScreen()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+              ),
+              child: const Text(
+                "내 동네 설정하기",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
           ),
