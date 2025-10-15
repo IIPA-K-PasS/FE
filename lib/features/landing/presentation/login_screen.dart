@@ -74,13 +74,8 @@ class LoginScreen extends StatelessWidget {
                         builder: (_) => const Center(child: CircularProgressIndicator()),
                       );
                       try {
-                        OAuthToken token;
-                        if (await isKakaoTalkInstalled()) {
-                          token = await UserApi.instance.loginWithKakaoTalk();
-                        } else {
-                          token = await UserApi.instance.loginWithKakaoAccount();
-                        }
-                        final idToken = token.idToken;
+                        // 개선된 로그인 로직 사용
+                        final idToken = await AuthService.performKakaoLogin();
                         if (idToken == null) {
                           if (context.mounted) Navigator.of(context).pop();
                           scaffold.showSnackBar(
