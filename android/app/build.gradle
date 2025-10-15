@@ -52,6 +52,10 @@ android {
             ndk {
                 abiFilters "armeabi-v7a", "arm64-v8a", "x86_64"
             }
+            
+            // Kakao Native App Key를 manifestPlaceholders로 주입
+            def kakaoAppKey = localProperties.getProperty('KAKAO_NATIVE_APP_KEY')
+            manifestPlaceholders += [KAKAO_NATIVE_APP_KEY: kakaoAppKey ?: ""]
         }  
 
 

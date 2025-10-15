@@ -1,5 +1,6 @@
 import 'package:billow/features/landing/presentation/splash_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'features/home/presentation/home_screen.dart';
 import 'features/challenge/presentation/challenge_screen.dart';
 import 'features/tips/presentation/tips_screen.dart';
@@ -7,8 +8,17 @@ import 'features/profile/presentation/profile_screen.dart';
 import 'features/auth/presentation/auth_test_screen.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
-void main() {
-  KakaoSdk.init(nativeAppKey: 'b70b066e6c735236882c7e05c089e3f6');
+Future<void> main() async {
+  // .env 파일 로드
+  await dotenv.load(fileName: '.env');
+  
+  // 환경변수에서 카카오 네이티브 앱 키 가져오기
+  final kakaoNativeAppKey = dotenv.env['KAKAO_NATIVE_APP_KEY'];
+  if (kakaoNativeAppKey == null || kakaoNativeAppKey.isEmpty) {
+    throw Exception('KAKAO_NATIVE_APP_KEY is not set in .env file');
+  }
+  
+  KakaoSdk.init(nativeAppKey: kakaoNativeAppKey);
   runApp(const MyApp());
 }
 

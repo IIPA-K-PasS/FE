@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../config/api_config.dart';
 import '../data/bill_response_model.dart';
 
 // 실제 API 통신을 담당하는 클래스입니다.
 class BillRemoteDataSource {
-  static const String _baseUrl = 'http://billow.210-178-1-132.nip.io/swagger-ui/index.html';
+  // ApiConfig에서 baseUrl을 가져옵니다
+  static String get _baseUrl => ApiConfig.baseUrl;
 
   Future<BillResponseModel> uploadBill({
     required String billType,
