@@ -79,8 +79,7 @@ class BillSummaryCard extends StatelessWidget {
               button: true,
               child: ElevatedButton(
                 onPressed: () {
-                  // TODO: 고지서 촬영 기능 구현
-                  print('고지서 촬영 버튼 클릭됨');
+                  _showBillTypeSelectionSheet(context);
                 },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.teal[400],
@@ -111,6 +110,132 @@ class BillSummaryCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showBillTypeSelectionSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)), // 상단 둥근 모서리
+      ),
+      builder: (BuildContext bc) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.45,
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center( // 모달 손잡이
+                child: Container(
+                  width: 40,
+                  height: 5,
+                  margin: const EdgeInsets.only(bottom: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              const Text(
+                '어떤 고지서를 촬영할까요?',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                '분석하고 싶은 고지서를 선택해주세요.',
+                style: TextStyle(fontSize: 15, color: Colors.black54),
+              ),
+              const SizedBox(height: 30),
+
+              _BillTypeSelectionButton(
+                icon: Icons.flash_on,
+                label: '전기 요금',
+                color: const Color(0xFFFBC02D),
+                onPressed: () {
+                  Navigator.pop(bc); // 모달 닫기
+                  // TODO: 전기 요금 촬영 로직 시작
+                  print('전기 요금 촬영 선택됨');
+                },
+              ),
+              const SizedBox(height: 12),
+
+              _BillTypeSelectionButton(
+                icon: Icons.water_drop,
+                label: '수도 요금',
+                color: const Color(0xFF1976D2),
+                onPressed: () {
+                  Navigator.pop(bc); // 모달 닫기
+                  // TODO: 수도 요금 촬영 로직 시작
+                  print('수도 요금 촬영 선택됨');
+                },
+              ),
+              const SizedBox(height: 12),
+
+              _BillTypeSelectionButton(
+                icon: Icons.local_fire_department,
+                label: '가스 요금',
+                color: const Color(0xFFD32F2F),
+                onPressed: () {
+                  Navigator.pop(bc); // 모달 닫기
+                  // TODO: 가스 요금 촬영 로직 시작
+                  print('가스 요금 촬영 선택됨');
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _BillTypeSelectionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onPressed;
+
+  const _BillTypeSelectionButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          side: BorderSide(color: color.withOpacity(0.8), width: 1.5),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 16), // 버튼 패딩 조절
+          backgroundColor: Colors.white,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 20), // 아이콘 크기 조절
+            const SizedBox(width: 10),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

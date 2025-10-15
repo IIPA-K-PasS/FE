@@ -1,6 +1,7 @@
+import 'package:billow/features/landing/presentation/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'features/home/presentation/home_screen.dart';
-import 'features/challenge/presentation/challenge_page.dart';
+import 'features/challenge/presentation/challenge_screen.dart';
 import 'features/tips/presentation/tips_screen.dart';
 import 'features/profile/presentation/profile_screen.dart';
 import 'features/auth/presentation/auth_test_screen.dart';
@@ -27,7 +28,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const MainNavigationPage(),
+      home: const SplashScreen(),
     );
   }
 }
@@ -63,7 +64,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         titleSpacing: 40,
         // 제목 위젯
         title: Text(
-          'Eco-Wise',
+          'Billow',
           style: TextStyle(
             color: Theme.of(context).primaryColor, // 테마의 기본 색상(teal) 사용
             fontWeight: FontWeight.bold,
