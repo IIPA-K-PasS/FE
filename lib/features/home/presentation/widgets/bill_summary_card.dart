@@ -1,7 +1,41 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import '../bill_preview_screen.dart';
 
 class BillSummaryCard extends StatelessWidget {
   const BillSummaryCard({super.key});
+
+  Future<void> _pickImageAndNavigate(BuildContext context, String billType) async {
+    final ImagePicker picker = ImagePicker();
+
+    Navigator.of(context).pop(); // 모달 먼저 닫기
+
+    try {
+      final XFile? pickedFile = await picker.pickImage(source: ImageSource.camera);
+
+      if (pickedFile != null && context.mounted) {
+        final result = await Navigator.of(context).push<bool>(
+          MaterialPageRoute(
+            builder: (context) => BillPreviewScreen(
+              imageFile: pickedFile,
+              billType: billType,
+            ),
+          ),
+        );
+
+        if (result == true) {
+          // TODO: 분석 성공 후 홈 화면 데이터 갱신 로직 (예: Provider, BLoC 호출)
+          print("고지서 분석 및 업로드 성공! 홈 화면을 갱신합니다.");
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('카메라를 열 수 없습니다: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -156,11 +190,8 @@ class BillSummaryCard extends StatelessWidget {
                 icon: Icons.flash_on,
                 label: '전기 요금',
                 color: const Color(0xFFFBC02D),
-                onPressed: () {
-                  Navigator.pop(bc); // 모달 닫기
-                  // TODO: 전기 요금 촬영 로직 시작
-                  print('전기 요금 촬영 선택됨');
-                },
+                onPressed: () =>
+                  _pickImageAndNavigate(context, 'ELECTRICITY')
               ),
               const SizedBox(height: 12),
 
@@ -168,11 +199,8 @@ class BillSummaryCard extends StatelessWidget {
                 icon: Icons.water_drop,
                 label: '수도 요금',
                 color: const Color(0xFF1976D2),
-                onPressed: () {
-                  Navigator.pop(bc); // 모달 닫기
-                  // TODO: 수도 요금 촬영 로직 시작
-                  print('수도 요금 촬영 선택됨');
-                },
+                onPressed: () =>
+                 _pickImageAndNavigate(context, 'WATER')
               ),
               const SizedBox(height: 12),
 
@@ -180,11 +208,8 @@ class BillSummaryCard extends StatelessWidget {
                 icon: Icons.local_fire_department,
                 label: '가스 요금',
                 color: const Color(0xFFD32F2F),
-                onPressed: () {
-                  Navigator.pop(bc); // 모달 닫기
-                  // TODO: 가스 요금 촬영 로직 시작
-                  print('가스 요금 촬영 선택됨');
-                },
+                onPressed: () =>
+                    _pickImageAndNavigate(context, 'GAS')
               ),
             ],
           ),
@@ -240,3 +265,4 @@ class _BillTypeSelectionButton extends StatelessWidget {
     );
   }
 }
+
