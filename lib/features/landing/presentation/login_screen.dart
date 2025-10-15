@@ -3,7 +3,7 @@ import 'package:billow/main.dart';
 import '../../../services/auth_service.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
-import '../../../common/animation/slide_route.dart'; // MainNavigationPage를 import
+import '../../../core/animation/slide_route.dart'; // MainNavigationPage를 import
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
