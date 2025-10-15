@@ -26,6 +26,6 @@ class FadeRoute extends PageRouteBuilder {
       child: child,
     ),
 
-    transitionDuration: const Duration(milliseconds: 250),
+    transitionDuration: const Duration(milliseconds: 350),
   );
 }
