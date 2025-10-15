@@ -1,4 +1,4 @@
-import 'package:billow/common/animation/slide_route.dart';
+import 'package:billow/core/animation/slide_route.dart';
 import 'package:flutter/material.dart';
 
 import '../neighborhood_setting_screen.dart';
