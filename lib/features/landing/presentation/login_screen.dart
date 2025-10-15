@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:billow/main.dart';
+import '../../../services/auth_service.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
 import '../../../core/animation/slide_route.dart'; // MainNavigationPage를 import
 
@@ -12,9 +14,11 @@ class LoginScreen extends StatelessWidget {
       backgroundColor: Theme.of(context).secondaryHeaderColor,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 80.0),
-          child: Column(
-            children: [
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 40.0),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
               Center(
                 child: Image.asset(
                   'assets/images/billow_logo.png',
@@ -23,13 +27,14 @@ class LoginScreen extends StatelessWidget {
               ),
               Text(
                 'Billow',
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 50,
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).primaryColor
                 ),
               ),
-              const SizedBox(height: 80),
+              const SizedBox(height: 60),
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -55,18 +60,54 @@ class LoginScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 80),
+              const SizedBox(height: 60),
               Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   // 카카오 로그인 버튼
                   ElevatedButton(
-                    onPressed: () {
-                      // TODO: 실제 카카오 로그인 로직 구현
-                      Navigator.pushReplacement(
-                        context,
-                        SlideRoute(page: const MainNavigationPage()),
+                    onPressed: () async {
+                      final scaffold = ScaffoldMessenger.of(context);
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (_) => const Center(child: CircularProgressIndicator()),
                       );
+                      try {
+                        OAuthToken token;
+                        if (await isKakaoTalkInstalled()) {
+                          token = await UserApi.instance.loginWithKakaoTalk();
+                        } else {
+                          token = await UserApi.instance.loginWithKakaoAccount();
+                        }
+                        final idToken = token.idToken;
+                        if (idToken == null) {
+                          if (context.mounted) Navigator.of(context).pop();
+                          scaffold.showSnackBar(
+                            const SnackBar(content: Text('ID 토큰을 받지 못했습니다. openid 동의 확인')), 
+                          );
+                          return;
+                        }
+                        final ok = await AuthService.loginWithKakaoIdToken(idToken);
+                        if (context.mounted) Navigator.of(context).pop();
+                        if (!ok) {
+                          scaffold.showSnackBar(
+                            const SnackBar(content: Text('로그인 실패: 서버 연동 확인 필요')), 
+                          );
+                          return;
+                        }
+                        if (context.mounted) {
+                          Navigator.pushReplacement(
+                            context,
+                            SlideRoute(page: const MainNavigationPage()),
+                          );
+                        }
+                      } catch (e) {
+                        if (context.mounted) Navigator.of(context).pop();
+                        scaffold.showSnackBar(
+                          SnackBar(content: Text('카카오 로그인 실패: $e')),
+                        );
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFFAE100), // 카카오 노란색
@@ -119,10 +160,40 @@ class LoginScreen extends StatelessWidget {
                   const SizedBox(height: 30), // 하단 여백
                 ],
               ),
+              const SizedBox(height: 20),
             ],
+          ),
           ),
         ),
       ),
     );
   }
+}
+
+Future<String?> _promptIdToken(BuildContext context) async {
+  final controller = TextEditingController();
+  return showDialog<String>(
+    context: context,
+    builder: (ctx) {
+      return AlertDialog(
+        title: const Text('Kakao ID Token 입력'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(hintText: '카카오에서 발급받은 idToken 붙여넣기'),
+          minLines: 1,
+          maxLines: 3,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(controller.text),
+            child: const Text('확인'),
+          ),
+        ],
+      );
+    },
+  );
 }
