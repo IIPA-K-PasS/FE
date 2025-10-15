@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:billow/main.dart'; // MainNavigationPage를 import
+import 'package:billow/main.dart';
+
+import '../../../common/animation/slide_route.dart'; // MainNavigationPage를 import
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -63,7 +65,7 @@ class LoginScreen extends StatelessWidget {
                       // TODO: 실제 카카오 로그인 로직 구현
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => const MainNavigationPage()),
+                        SlideRoute(page: const MainNavigationPage()),
                       );
                     },
                     style: ElevatedButton.styleFrom(
