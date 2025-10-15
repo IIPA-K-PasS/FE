@@ -3,6 +3,7 @@ import 'features/home/presentation/home_screen.dart';
 import 'features/challenge/presentation/challenge_page.dart';
 import 'features/tips/presentation/tips_screen.dart';
 import 'features/profile/presentation/profile_screen.dart';
+import 'features/auth/presentation/auth_test_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -71,6 +72,15 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         ),
         // AppBar 오른쪽에 배치될 아이콘 목록
         actions: [
+          IconButton(
+            icon: const Icon(Icons.vpn_key, color: Colors.black54),
+            tooltip: 'Auth Test',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const AuthTestScreen()),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(
                 Icons.notifications_none,
