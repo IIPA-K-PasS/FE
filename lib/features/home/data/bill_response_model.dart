@@ -6,6 +6,7 @@ class BillResponseModel extends BillEntity {
     required super.billType,
     required super.amount,
     required super.usagePeriod,
+    required super.rawText
   });
 
   factory BillResponseModel.fromJson(Map<String, dynamic> json) {
@@ -13,6 +14,7 @@ class BillResponseModel extends BillEntity {
       billType: json['billType'],
       amount: json['amount'],
       usagePeriod: json['usagePeriod'],
+      rawText: json['rawText']
     );
   }
 
@@ -22,6 +24,7 @@ class BillResponseModel extends BillEntity {
       billType: billType,
       amount: amount,
       usagePeriod: usagePeriod,
+      rawText: rawText
     );
   }
 }
