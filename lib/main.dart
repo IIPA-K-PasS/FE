@@ -43,9 +43,9 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
-    const HomePage(),
-    const ChallengePage(),
-    const TipsPage(),
+    const HomeScreen(),
+    const ChallengeScreen(),
+    const TipsScreen(),
     const ProfileScreen(),
   ];
 

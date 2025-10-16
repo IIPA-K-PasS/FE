@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class TipsPage extends StatefulWidget {
-  const TipsPage({super.key});
+class TipsScreen extends StatefulWidget {
+  const TipsScreen({super.key});
 
   @override
-  State<TipsPage> createState() => _TipsPageState();
+  State<TipsScreen> createState() => _TipsPageState();
 }
 
-class _TipsPageState extends State<TipsPage> {
+class _TipsPageState extends State<TipsScreen> {
   final TextEditingController _searchController = TextEditingController();
 
   final List<_TipItem> _allTips = <_TipItem>[
