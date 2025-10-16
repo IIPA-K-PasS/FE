@@ -45,9 +45,14 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
 	<key>NSCameraUsageDescription</key>
     <string>고지서 촬영을 위해 카메라 접근 권한이 필요합니다.</string>
     <key>NSPhotoLibraryUsageDescription</key>
     <string>고지서 사진을 등록하기 위해 앨범 접근 권한이 필요합니다.</string>
+
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>현재 위치를 기반으로 동네를 설정하기 위해 위치 정보 접근 권한이 필요합니다.</string>
+
 </dict>
 </plist>

@@ -1,11 +1,13 @@
 import 'package:billow/features/landing/presentation/splash_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'features/home/presentation/home_screen.dart';
 import 'features/challenge/presentation/challenge_screen.dart';
 import 'features/tips/presentation/tips_screen.dart';
 import 'features/profile/presentation/profile_screen.dart';
 
-void main() {
+Future<void> main() async {
+  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
 
