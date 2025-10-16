@@ -9,9 +9,7 @@ import 'features/auth/presentation/auth_test_screen.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
 Future<void> main() async {
-<<<<<<< HEAD
-  await dotenv.load(fileName: ".env");
-=======
+
   // .env 파일 로드
   await dotenv.load(fileName: '.env');
   
@@ -22,7 +20,6 @@ Future<void> main() async {
   }
   
   KakaoSdk.init(nativeAppKey: kakaoNativeAppKey);
->>>>>>> develop
   runApp(const MyApp());
 }
 

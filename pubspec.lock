@@ -9,8 +9,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.7.0"
-<<<<<<< HEAD
-=======
   asn1lib:
     dependency: transitive
     description:
@@ -19,7 +17,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.6.5"
->>>>>>> develop
   async:
     dependency: transitive
     description:
@@ -92,7 +89,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.8"
-<<<<<<< HEAD
   dbus:
     dependency: transitive
     description:
@@ -101,7 +97,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.11"
-=======
   dio:
     dependency: "direct main"
     description:
@@ -126,7 +121,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.0.3"
->>>>>>> develop
   fake_async:
     dependency: transitive
     description:
@@ -143,8 +137,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.4"
-<<<<<<< HEAD
-=======
   file:
     dependency: transitive
     description:
@@ -153,7 +145,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.1"
->>>>>>> develop
   file_selector_linux:
     dependency: transitive
     description:
@@ -203,17 +194,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_dotenv
-<<<<<<< HEAD
       sha256: d4130c4a43e0b13fefc593bc3961f2cb46e30cb79e253d4a526b1b5d24ae1ce4
       url: "https://pub.dev"
     source: hosted
     version: "6.0.0"
-=======
-      sha256: b7c7be5cd9f6ef7a78429cabd2774d3c4af50e79cb2b7593e3d5d763ef95c61b
-      url: "https://pub.dev"
-    source: hosted
-    version: "5.2.1"
->>>>>>> develop
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -568,16 +552,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.9.1"
-<<<<<<< HEAD
-  petitparser:
-    dependency: transitive
-    description:
-      name: petitparser
-      sha256: "1a97266a94f7350d30ae522c0af07890c70b8e62c71e8e3920d1db4d23c057d1"
-      url: "https://pub.dev"
-    source: hosted
-    version: "7.0.1"
-=======
   path_provider:
     dependency: transitive
     description:
@@ -626,6 +600,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.0"
+  petitparser:
+    dependency: transitive
+    description:
+      name: petitparser
+      sha256: "1a97266a94f7350d30ae522c0af07890c70b8e62c71e8e3920d1db4d23c057d1"
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.0.1"
   platform:
     dependency: transitive
     description:
@@ -634,7 +616,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.6"
->>>>>>> develop
   plugin_platform_interface:
     dependency: transitive
     description:
@@ -719,8 +700,7 @@ packages:
       sha256: "254ee5351d6cb365c859e20ee823c3bb479bf4a293c22d17a9f1bf144ce86f7c"
       url: "https://pub.dev"
     source: hosted
-<<<<<<< HEAD
-    version: "1.10.0"
+    version: "1.10.1"
   sprintf:
     dependency: transitive
     description:
@@ -729,9 +709,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.0"
-=======
-    version: "1.10.1"
->>>>>>> develop
   stack_trace:
     dependency: transitive
     description:
@@ -828,7 +805,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.0"
-<<<<<<< HEAD
   xml:
     dependency: transitive
     description:
@@ -837,8 +813,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.6.1"
-=======
->>>>>>> develop
 sdks:
   dart: ">=3.9.0 <4.0.0"
   flutter: ">=3.35.0"
