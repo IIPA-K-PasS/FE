@@ -42,6 +42,8 @@ android {
             signingConfig = signingConfigs.debug
         }
     }
+    compileSdkVersion 36
+
 
         defaultConfig {
             applicationId "com.example.billow"
