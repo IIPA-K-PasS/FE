@@ -25,7 +25,7 @@ if (flutterVersionName == null) {
 
 android {
     namespace = "com.example.billow"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -42,7 +42,10 @@ android {
             signingConfig = signingConfigs.debug
         }
     }
+<<<<<<< HEAD
     compileSdkVersion 36
+=======
+>>>>>>> develop
 
         defaultConfig {
             applicationId "com.example.billow"
@@ -53,6 +56,10 @@ android {
             ndk {
                 abiFilters "armeabi-v7a", "arm64-v8a", "x86_64"
             }
+            
+            // Kakao Native App Key를 manifestPlaceholders로 주입
+            def kakaoAppKey = localProperties.getProperty('KAKAO_NATIVE_APP_KEY')
+            manifestPlaceholders += [KAKAO_NATIVE_APP_KEY: kakaoAppKey ?: ""]
         }  
 
 

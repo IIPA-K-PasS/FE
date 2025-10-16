@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../../services/auth_service.dart';
+import '../../../../services/kakao_service.dart';
 
 class SettingsSection extends StatelessWidget {
   const SettingsSection({super.key});
@@ -155,8 +157,9 @@ class SettingsSection extends StatelessWidget {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                // TODO: 실제 로그아웃 로직 구현
-                print('로그아웃 실행됨');
+                // SDK 세션 로그아웃 + 로컬 JWT 삭제
+                KakaoService.logoutSdk();
+                AuthService.logoutLocal();
               },
               child: Text(
                 '로그아웃',
