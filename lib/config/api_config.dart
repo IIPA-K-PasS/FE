@@ -24,6 +24,9 @@ class ApiConfig {
   static const String userBookmarks = '/user/bookmarks';
   static const String userChallenges = '/user/challenges';
 
+  // Terms
+  static const String terms = '/term';
+
   // Headers
   static const Map<String, String> defaultHeaders = {
     'Content-Type': 'application/json',

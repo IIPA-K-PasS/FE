@@ -12,7 +12,15 @@ class TokenStorage {
     await _storage.write(key: _refreshKey, value: refresh);
   }
 
-  static Future<String?> getAccessToken() => _storage.read(key: _accessKey);
+  static Future<String?> getAccessToken() async {
+    final token = await _storage.read(key: _accessKey);
+    // 디버그용 자동 출력
+    if (token != null) {
+      debugPrint('🔑 [Current AccessToken] Bearer $token');
+    }
+    return token;
+  }
+  
   static Future<String?> getRefreshToken() => _storage.read(key: _refreshKey);
   
   /// 디버그용: Bearer Token 출력 (Swagger 테스트용)

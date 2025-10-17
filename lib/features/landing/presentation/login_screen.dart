@@ -4,6 +4,8 @@ import '../../../services/auth_service.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
 import '../../../core/animation/slide_route.dart';
+import '../../terms/data/term_api_service.dart';
+import '../../terms/presentation/terms_agreement_screen.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -91,11 +93,26 @@ class LoginScreen extends StatelessWidget {
                           );
                           return;
                         }
+
+                        // 약관 동의 여부 확인
                         if (context.mounted) {
-                          Navigator.pushReplacement(
-                            context,
-                            SlideRoute(page: const MainNavigationPage()),
-                          );
+                          final hasAgreed = await TermApiService.hasAgreedToRequiredTerms();
+
+                          if (!context.mounted) return;
+
+                          if (hasAgreed) {
+                            // 기존 회원 → 메인 화면
+                            Navigator.pushReplacement(
+                              context,
+                              SlideRoute(page: const MainNavigationPage()),
+                            );
+                          } else {
+                            // 신규 회원 → 약관 동의 화면
+                            Navigator.pushReplacement(
+                              context,
+                              SlideRoute(page: const TermsAgreementScreen()),
+                            );
+                          }
                         }
                       } catch (e) {
                         if (context.mounted) Navigator.of(context).pop();
