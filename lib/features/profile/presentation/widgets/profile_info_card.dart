@@ -140,10 +140,12 @@ class _ProfileInfoCardState extends State<ProfileInfoCard> {
                           child: CircleAvatar(
                             radius: 30,
                             backgroundColor: Colors.teal[100],
-                            backgroundImage: _userInfo!.profileImageUrl.isNotEmpty
-                                ? NetworkImage(_userInfo!.profileImageUrl)
+                            backgroundImage: _userInfo!.profileImageUrl != null &&
+                                    _userInfo!.profileImageUrl!.isNotEmpty
+                                ? NetworkImage(_userInfo!.profileImageUrl!)
                                 : null,
-                            child: _userInfo!.profileImageUrl.isEmpty
+                            child: _userInfo!.profileImageUrl == null ||
+                                    _userInfo!.profileImageUrl!.isEmpty
                                 ? Text(
                                     _userInfo!.nickname.isNotEmpty
                                         ? _userInfo!.nickname[0].toUpperCase()
