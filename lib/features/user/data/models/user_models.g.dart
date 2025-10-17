@@ -26,7 +26,7 @@ UserInfo _$UserInfoFromJson(Map<String, dynamic> json) => UserInfo(
       id: (json['id'] as num).toInt(),
       nickname: json['nickname'] as String,
       email: json['email'] as String,
-      profileImageUrl: json['profileImageUrl'] as String,
+      profileImageUrl: json['profileImageUrl'] as String?,
       point: (json['point'] as num).toInt(),
     );
 

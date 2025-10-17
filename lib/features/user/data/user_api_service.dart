@@ -8,18 +8,29 @@ class UserApiService {
   static Future<UserInfo?> fetchUserInfo() async {
     try {
       debugPrint('[UserAPI] Fetching user info...');
+      debugPrint('[UserAPI] URL: ${ApiConfig.baseUrl}${ApiConfig.user}');
       final response = await ApiClient.dio.get(ApiConfig.user);
 
       debugPrint('[UserAPI] Response status: ${response.statusCode}');
+      debugPrint('[UserAPI] Raw response data: ${response.data}');
 
       if (response.statusCode == 200 && response.data != null) {
         final userInfoResponse =
             UserInfoResponse.fromJson(response.data as Map<String, dynamic>);
 
+        debugPrint('[UserAPI] Parsed isSuccess: ${userInfoResponse.isSuccess}');
+        debugPrint('[UserAPI] Parsed code: ${userInfoResponse.code}');
+        debugPrint('[UserAPI] Parsed message: ${userInfoResponse.message}');
+
         if (userInfoResponse.isSuccess) {
-          debugPrint(
-              '[UserAPI] ✅ User info fetched: ${userInfoResponse.result.nickname}');
-          return userInfoResponse.result;
+          final user = userInfoResponse.result;
+          debugPrint('[UserAPI] ✅ User info fetched:');
+          debugPrint('[UserAPI]   - id: ${user.id}');
+          debugPrint('[UserAPI]   - nickname: ${user.nickname}');
+          debugPrint('[UserAPI]   - email: ${user.email}');
+          debugPrint('[UserAPI]   - profileImageUrl: ${user.profileImageUrl ?? "(null)"}');
+          debugPrint('[UserAPI]   - point: ${user.point}');
+          return user;
         } else {
           debugPrint(
               '[UserAPI] API returned isSuccess=false: ${userInfoResponse.message}');

@@ -28,14 +28,14 @@ class UserInfo {
   final int id;
   final String nickname;
   final String email;
-  final String profileImageUrl;
+  final String? profileImageUrl;  // nullable로 변경
   final int point;
 
   UserInfo({
     required this.id,
     required this.nickname,
     required this.email,
-    required this.profileImageUrl,
+    this.profileImageUrl,  // required 제거
     required this.point,
   });
 

@@ -20,6 +20,11 @@ class _AuthInterceptor extends Interceptor {
     final token = await TokenStorage.getAccessToken();
     if (token != null && token.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $token';
+      debugPrint('🔑 [API Request] ${options.method} ${options.path}');
+      debugPrint('🔑 [Access Token Only] $token');
+      debugPrint('🔑 [For Swagger] Bearer $token');
+    } else {
+      debugPrint('⚠️ [API Request] ${options.method} ${options.path} - No token!');
     }
     super.onRequest(options, handler);
   }
