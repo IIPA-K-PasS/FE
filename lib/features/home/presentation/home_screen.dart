@@ -59,7 +59,7 @@ class _HomePageState extends State<HomeScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
       ),
       builder: (BuildContext bc) {
-        // ⭐ 원래의 디자인 코드로 복원합니다.
+        // 모달 UI는 기존과 거의 동일 (onPressed 부분만 수정)
         return Container(
           // height 속성을 추가하여 높이를 지정합니다.
           height: MediaQuery.of(context).size.height * 0.45,

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
@@ -9,15 +10,20 @@ import '../data/bill_response_model.dart';
 class BillRemoteDataSource {
   // ApiConfig에서 baseUrl을 가져옵니다
   static String get _baseUrl => ApiConfig.baseUrl;
+  final _storage = const FlutterSecureStorage();
 
   Future<BillResponseModel> uploadBill({
     required String billType,
     required XFile billImage,
   }) async {
-    // TODO: 실제 JWT 토큰을 안전한 곳(Secure Storage 등)에서 가져오세요.
-    const String jwtToken = 'YOUR_JWT_TOKEN_HERE';
+    
+    final String? jwtToken = await _storage.read(key: 'access_token');
 
-    final uri = Uri.parse(_baseUrl);
+    if (jwtToken == null || jwtToken.isEmpty) {
+      throw Exception('Access Token not found. Please log in.');
+    }
+
+    final uri = Uri.parse('$_baseUrl/api/bills/ocr');
     final request = http.MultipartRequest('POST', uri);
 
     request.headers['Authorization'] = 'Bearer $jwtToken';
