@@ -73,10 +73,13 @@ class _ProfileInfoCardState extends State<ProfileInfoCard> {
                 ),
               );
 
-              final success = await UserApiService.updateNickname(newNickname);
+              try {
+                final success = await UserApiService.updateNickname(newNickname);
 
-              if (mounted) {
-                Navigator.pop(context); // 로딩 다이얼로그 닫기
+                if (!mounted) return;
+                
+                // 로딩 다이얼로그 닫기
+                Navigator.of(context, rootNavigator: true).pop();
 
                 if (success) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -88,6 +91,15 @@ class _ProfileInfoCardState extends State<ProfileInfoCard> {
                     const SnackBar(content: Text('닉네임 변경에 실패했습니다')),
                   );
                 }
+              } catch (e) {
+                if (!mounted) return;
+                
+                // 로딩 다이얼로그 닫기
+                Navigator.of(context, rootNavigator: true).pop();
+                
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('에러 발생: $e')),
+                );
               }
             },
             child: const Text('저장'),
