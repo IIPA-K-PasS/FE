@@ -1,3 +1,4 @@
+import 'package:billow/features/home/presentation/widgets/bill_type_selection_button.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../domain/bill_entity.dart';
@@ -20,7 +21,7 @@ class _HomePageState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      body: const SafeArea(
+      body:  SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
           child: Column(
@@ -58,32 +59,70 @@ class _HomePageState extends State<HomeScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
       ),
       builder: (BuildContext bc) {
-        // 모달 UI는 기존과 거의 동일 (onPressed 부분만 수정)
+        // ⭐ 원래의 디자인 코드로 복원합니다.
         return Container(
+          // height 속성을 추가하여 높이를 지정합니다.
+          height: MediaQuery.of(context).size.height * 0.45,
           padding: const EdgeInsets.all(20.0),
-          child: Wrap(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ListTile(
-                leading: const Icon(Icons.flash_on, color: Color(0xFFFBC02D)),
-                title: const Text('전기 요금'),
-                onTap: () {
-                  _pickImageAndNavigate('ELECTRICITY');
-                },
+              // 모달 손잡이
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 5,
+                  margin: const EdgeInsets.only(bottom: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
               ),
-              ListTile(
-                leading: const Icon(Icons.water_drop, color: Color(0xFF1976D2)),
-                title: const Text('수도 요금'),
-                onTap: () {
-                  _pickImageAndNavigate('WATER');
-                },
+              const SizedBox(height: 10),
+
+              // 제목 텍스트
+              const Text(
+                '어떤 고지서를 촬영할까요?',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
-              ListTile(
-                leading: const Icon(Icons.local_fire_department, color: Color(0xFFD32F2F)),
-                title: const Text('가스 요금'),
-                onTap: () {
-                  _pickImageAndNavigate('GAS');
-                },
+              const SizedBox(height: 8),
+
+              // 부제목 텍스트
+              const Text(
+                '분석하고 싶은 고지서를 선택해주세요.',
+                style: TextStyle(fontSize: 15, color: Colors.black54),
               ),
+              const SizedBox(height: 30),
+
+              // 커스텀 버튼들
+              BillTypeSelectionButton(
+                  icon: Icons.flash_on,
+                  label: '전기 요금',
+                  color: const Color(0xFFFBC02D),
+                  onPressed: () {
+                    // onPressed 내부에서 _pickImageAndNavigate를 호출합니다.
+                    _pickImageAndNavigate('ELECTRICITY');
+                  }),
+              const SizedBox(height: 12),
+
+              BillTypeSelectionButton(
+                  icon: Icons.water_drop,
+                  label: '수도 요금',
+                  color: const Color(0xFF1976D2),
+                  onPressed: () {
+                    _pickImageAndNavigate('WATER');
+                  }),
+              const SizedBox(height: 12),
+
+              BillTypeSelectionButton(
+                  icon: Icons.local_fire_department,
+                  label: '가스 요금',
+                  color: const Color(0xFFD32F2F),
+                  onPressed: () {
+                    _pickImageAndNavigate('GAS');
+                  }),
             ],
           ),
         );
