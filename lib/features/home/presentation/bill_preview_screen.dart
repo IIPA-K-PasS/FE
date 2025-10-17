@@ -44,7 +44,7 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
               content:
               Text('${result.usagePeriod} 고지서 분석 완료! 금액: ${result.amount}원')),
         );
-        Navigator.of(context).pop(true); // 성공 신호와 함께 pop
+        Navigator.of(context).pop(result);
       }
     } catch (e) {
       if (mounted) {

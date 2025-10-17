@@ -57,9 +57,9 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
-    const HomePage(),
-    const ChallengePage(),
-    const TipsPage(),
+    const HomeScreen(),
+    const ChallengeScreen(),
+    const TipsScreen(),
     const ProfileScreen(),
   ];
 
@@ -75,16 +75,14 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       appBar: AppBar(
         toolbarHeight: 64,
         titleSpacing: 40,
-        // 제목 위젯
         title: Text(
           'Billow',
           style: TextStyle(
-            color: Theme.of(context).primaryColor, // 테마의 기본 색상(teal) 사용
+            color: Theme.of(context).primaryColor,
             fontWeight: FontWeight.bold,
             fontSize: 22,
           ),
         ),
-        // AppBar 오른쪽에 배치될 아이콘 목록
         actions: [
           IconButton(
             icon: const Icon(Icons.vpn_key, color: Colors.black54),
@@ -101,13 +99,12 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                 color: Colors.black54,
                 size: 32),
             onPressed: () {
-              // 알림 버튼 클릭 시 동작
             },
           ),
           Padding(
             padding: const EdgeInsets.only(right: 20.0, left: 8.0),
             child: CircleAvatar(
-              radius: 20, // 원의 크기
+              radius: 20,
               backgroundColor: Colors.teal[50],
               child: Text(
                 'Me',
