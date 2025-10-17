@@ -1,4 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter/foundation.dart';
 
 class TokenStorage {
   static const FlutterSecureStorage _storage = FlutterSecureStorage();
@@ -13,6 +14,19 @@ class TokenStorage {
 
   static Future<String?> getAccessToken() => _storage.read(key: _accessKey);
   static Future<String?> getRefreshToken() => _storage.read(key: _refreshKey);
+  
+  /// 디버그용: Bearer Token 출력 (Swagger 테스트용)
+  static Future<void> printAccessTokenForSwagger() async {
+    final token = await getAccessToken();
+    if (token != null) {
+      debugPrint('═══════════════════════════════════════════════════════');
+      debugPrint('🔑 [Bearer Token for Swagger]');
+      debugPrint('Bearer $token');
+      debugPrint('═══════════════════════════════════════════════════════');
+    } else {
+      debugPrint('⚠️ No access token found');
+    }
+  }
 
   static Future<void> saveAccessToken(String access) => _storage.write(key: _accessKey, value: access);
 

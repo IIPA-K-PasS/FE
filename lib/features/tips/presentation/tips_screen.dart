@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../data/tip_api_service.dart';
+import '../data/models/tip_models.dart';
+import 'tip_detail_screen.dart';
 
 class TipsScreen extends StatefulWidget {
   const TipsScreen({super.key});
@@ -10,21 +13,40 @@ class TipsScreen extends StatefulWidget {
 class _TipsPageState extends State<TipsScreen> {
   final TextEditingController _searchController = TextEditingController();
 
-  final List<_TipItem> _allTips = <_TipItem>[
-    _TipItem(
-      leadingEmoji: '🤔',
-      title: '음식물 쓰레기, 일반 봉투에 버려도 되나요?',
-      tags: <String>['분리수거'],
-    ),
-    _TipItem(
-      leadingIcon: Icons.bolt,
-      leadingIconColor: Colors.orange,
-      title: '에어컨, 껐다 켰다 vs 계속 켜기, 뭐가 더 절약될까요?',
-      tags: <String>['전기요금', '생활꿀팁'],
-    ),
-  ];
-
+  List<TipItem> _allTips = [];
+  bool _loading = true;
+  String? _error;
   String _query = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTips();
+  }
+
+  Future<void> _loadTips() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      final tips = await TipApiService.fetchTips();
+      if (mounted) {
+        setState(() {
+          _allTips = tips;
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = '꿀팁을 불러오는데 실패했어요 😢';
+          _loading = false;
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -34,55 +56,107 @@ class _TipsPageState extends State<TipsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final List<_TipItem> visibleTips = _allTips
+    final List<TipItem> visibleTips = _allTips
         .where((t) => t.title.toLowerCase().contains(_query.toLowerCase()))
         .toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7F9),
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: <Widget>[
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-                child: _TipsHeader(),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: _SearchField(
-                  controller: _searchController,
-                  hintText: '궁금한 집을 검색해보세요',
-                  onChanged: (String value) => setState(() => _query = value),
+        child: RefreshIndicator(
+          onRefresh: _loadTips,
+          child: CustomScrollView(
+            slivers: <Widget>[
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                  child: _TipsHeader(),
                 ),
               ),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 16)),
-            SliverList.separated(
-              itemBuilder: (BuildContext context, int index) {
-                final _TipItem tip = visibleTips[index];
-                return Padding(
+              SliverToBoxAdapter(
+                child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _TipCard(
-                    tip: tip,
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('선택: ${tip.title}'),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    },
+                  child: _SearchField(
+                    controller: _searchController,
+                    hintText: '궁금한 팁을 검색해보세요',
+                    onChanged: (String value) => setState(() => _query = value),
                   ),
-                );
-              },
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemCount: visibleTips.length,
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
-          ],
+                ),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 16)),
+              
+              // 로딩 상태
+              if (_loading)
+                SliverToBoxAdapter(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(40),
+                      child: CircularProgressIndicator(color: Colors.teal),
+                    ),
+                  ),
+                )
+              // 에러 상태
+              else if (_error != null)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(40),
+                    child: Column(
+                      children: [
+                        Icon(Icons.error_outline, size: 48, color: Colors.grey),
+                        SizedBox(height: 16),
+                        Text(_error!, style: TextStyle(color: Colors.grey[600])),
+                        SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _loadTips,
+                          child: Text('다시 시도'),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              // 빈 상태
+              else if (visibleTips.isEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(40),
+                    child: Column(
+                      children: [
+                        Icon(Icons.search_off, size: 48, color: Colors.grey),
+                        SizedBox(height: 16),
+                        Text(
+                          _query.isEmpty ? '아직 꿀팁이 없어요' : '검색 결과가 없어요',
+                          style: TextStyle(color: Colors.grey[600]),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              // 목록 표시
+              else
+                SliverList.separated(
+                  itemBuilder: (BuildContext context, int index) {
+                    final TipItem tip = visibleTips[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: _TipCardAPI(
+                        tip: tip,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => TipDetailScreen(tipId: tip.id),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  itemCount: visibleTips.length,
+                ),
+              const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            ],
+          ),
         ),
       ),
     );
@@ -170,11 +244,12 @@ class _SearchField extends StatelessWidget {
   }
 }
 
-class _TipCard extends StatelessWidget {
-  final _TipItem tip;
+// API 데이터용 카드
+class _TipCardAPI extends StatelessWidget {
+  final TipItem tip;
   final VoidCallback? onTap;
 
-  const _TipCard({required this.tip, this.onTap});
+  const _TipCardAPI({required this.tip, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -207,8 +282,33 @@ class _TipCard extends StatelessWidget {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      _TipLeading(tip: tip),
-                      const SizedBox(width: 10),
+                      // 이미지 표시 (서버 데이터)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: tip.imageUrl.isNotEmpty
+                            ? Image.network(
+                                tip.imageUrl,
+                                width: 60,
+                                height: 60,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Container(
+                                  width: 60,
+                                  height: 60,
+                                  color: Colors.grey[200],
+                                  child: Icon(Icons.image_not_supported, color: Colors.grey),
+                                ),
+                              )
+                            : Container(
+                                width: 60,
+                                height: 60,
+                                decoration: BoxDecoration(
+                                  color: Colors.teal[100],
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(Icons.lightbulb, color: Colors.teal[600]),
+                              ),
+                      ),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,7 +316,7 @@ class _TipCard extends StatelessWidget {
                             Wrap(
                               spacing: 8,
                               runSpacing: 6,
-                              children: tip.tags
+                              children: tip.hashtags
                                   .map((String tag) => _TagChip(text: tag))
                                   .toList(),
                             ),
@@ -230,6 +330,8 @@ class _TipCard extends StatelessWidget {
                                     fontWeight: FontWeight.w700,
                                     color: Colors.black87,
                                   ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),

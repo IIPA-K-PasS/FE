@@ -14,6 +14,10 @@ class ApiConfig {
   static const String kakaoLogin = '/auth/kakao';
   static const String userInfo = '/auth/user-info';
 
+  // Tips
+  static const String tips = '/tip';
+  static String tipDetail(int id) => '/tip/$id';
+
   // Headers
   static const Map<String, String> defaultHeaders = {
     'Content-Type': 'application/json',
