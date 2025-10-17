@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../bookmarked_tips_screen.dart';
+import '../completed_challenges_screen.dart';
 
 class ActivitySection extends StatelessWidget {
   const ActivitySection({super.key});
@@ -41,8 +43,12 @@ class ActivitySection extends StatelessWidget {
               child: InkWell(
                 borderRadius: BorderRadius.circular(12),
                 onTap: () {
-                  // TODO: 찜한 꿀팁 페이지로 이동
-                  print('찜한 꿀팁 클릭됨');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const BookmarkedTipsScreen(),
+                    ),
+                  );
                 },
                 child: ListTile(
               contentPadding: const EdgeInsets.symmetric(
@@ -103,8 +109,12 @@ class ActivitySection extends StatelessWidget {
               child: InkWell(
                 borderRadius: BorderRadius.circular(12),
                 onTap: () {
-                  // TODO: 완료한 챌린지 페이지로 이동
-                  print('완료한 챌린지 클릭됨');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const CompletedChallengesScreen(),
+                    ),
+                  );
                 },
                 child: ListTile(
               contentPadding: const EdgeInsets.symmetric(

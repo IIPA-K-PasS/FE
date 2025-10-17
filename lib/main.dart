@@ -7,7 +7,6 @@ import 'features/tips/presentation/tips_screen.dart';
 import 'features/profile/presentation/profile_screen.dart';
 import 'features/auth/presentation/auth_test_screen.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
-import 'services/token_storage.dart';
 
 Future<void> main() async {
 
@@ -100,13 +99,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                 color: Colors.black54,
                 size: 32),
             onPressed: () {
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.key, size: 24, color: Colors.orange),
-            tooltip: 'Show Bearer Token (Swagger용)',
-            onPressed: () async {
-              await TokenStorage.printAccessTokenForSwagger();
             },
           ),
           Padding(
