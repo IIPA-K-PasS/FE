@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import '../config/api_config.dart';
 import 'api_client.dart';
@@ -10,18 +11,47 @@ class AuthService {
   // idToken은 카카오 SDK에서 발급받은 값
   static Future<bool> loginWithKakaoIdToken(String idToken) async {
     try {
+      // Debug: idToken 전달 여부 확인
+      debugPrint('[Auth] sending idToken to server: len=${idToken.length}');
+      debugPrint('[Auth] idToken for Swagger test:\n$idToken');
       final Response response = await ApiClient.dio.post(
         ApiConfig.kakaoLogin,
         data: jsonEncode({ 'idToken': idToken }),
       );
 
+      debugPrint('[Auth] /auth/kakao status: ${response.statusCode}');
       final data = response.data as Map<String, dynamic>;
       final String access = data['accessToken'] as String;
       final String refresh = data['refreshToken'] as String;
 
       await TokenStorage.saveTokens(access: access, refresh: refresh);
+      debugPrint('[Auth] tokens saved: accessLen=${access.length}, refreshLen=${refresh.length}');
       return true;
     } catch (e) {
+      debugPrint('[Auth][ERROR] loginWithKakaoIdToken failed: $e');
+      return false;
+    }
+  }
+
+  // 자동 로그인용: accessToken으로 서버 로그인
+  static Future<bool> loginWithKakaoAccessToken(String accessToken) async {
+    try {
+      debugPrint('[Auth] sending accessToken to server: len=${accessToken.length}');
+      final Response response = await ApiClient.dio.post(
+        ApiConfig.kakaoLogin,
+        data: jsonEncode({ 'accessToken': accessToken }),
+      );
+
+      debugPrint('[Auth] /auth/kakao status: ${response.statusCode}');
+      final data = response.data as Map<String, dynamic>;
+      final String access = data['accessToken'] as String;
+      final String refresh = data['refreshToken'] as String;
+
+      await TokenStorage.saveTokens(access: access, refresh: refresh);
+      debugPrint('[Auth] tokens saved: accessLen=${access.length}, refreshLen=${refresh.length}');
+      return true;
+    } catch (e) {
+      debugPrint('[Auth][ERROR] loginWithKakaoAccessToken failed: $e');
       return false;
     }
   }
@@ -47,16 +77,19 @@ class AuthService {
         // 카카오톡으로 로그인 시도
         try {
           final OAuthToken token = await UserApi.instance.loginWithKakaoTalk();
+          debugPrint('[Kakao] loginWithKakaoTalk success: hasIdToken=${token.idToken != null}, accessLen=${token.accessToken.length}');
           return token.idToken;
         } catch (e) {
           // 카카오톡 로그인 실패 시 계정 로그인으로 폴백
           print('카카오톡 로그인 실패, 계정 로그인으로 폴백: $e');
           final OAuthToken token = await UserApi.instance.loginWithKakaoAccount();
+          debugPrint('[Kakao] fallback loginWithKakaoAccount success: hasIdToken=${token.idToken != null}, accessLen=${token.accessToken.length}');
           return token.idToken;
         }
       } else {
         // 카카오톡 미설치 시 계정 로그인
         final OAuthToken token = await UserApi.instance.loginWithKakaoAccount();
+        debugPrint('[Kakao] loginWithKakaoAccount success (no talk): hasIdToken=${token.idToken != null}, accessLen=${token.accessToken.length}');
         return token.idToken;
       }
     } catch (e) {
@@ -76,6 +109,7 @@ class AuthService {
       // 주의: scopes 파라미터는 kakao_flutter_sdk_user 최신 버전에서만 지원됨
       // 현재 버전에서는 loginWithKakaoAccount()가 기본적으로 openid 포함
       final OAuthToken token = await UserApi.instance.loginWithKakaoAccount();
+      debugPrint('[Kakao] requestAdditionalScope -> hasIdToken=${token.idToken != null}, accessLen=${token.accessToken.length}');
       return token.idToken;
     } catch (e) {
       print('추가 동의 요청 실패: $e');
