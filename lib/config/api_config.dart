@@ -18,6 +18,12 @@ class ApiConfig {
   static const String tips = '/tip';
   static String tipDetail(int id) => '/tip/$id';
 
+  // User
+  static const String user = '/user';
+  static const String userProfile = '/user/profile';
+  static const String userBookmarks = '/user/bookmarks';
+  static const String userChallenges = '/user/challenges';
+
   // Headers
   static const Map<String, String> defaultHeaders = {
     'Content-Type': 'application/json',
