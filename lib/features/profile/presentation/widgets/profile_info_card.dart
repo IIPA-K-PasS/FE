@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'green_market_button.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' as kakao;
+import '../../../../services/kakao_service.dart';
 
 class ProfileInfoCard extends StatelessWidget {
   const ProfileInfoCard({super.key});
@@ -28,20 +30,29 @@ class ProfileInfoCard extends StatelessWidget {
           Row(
             children: [
               // 프로필 이미지 (CircleAvatar 사용)
-              Semantics(
-                label: '프로필 이미지',
-                child: CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Colors.teal[100],
-                  child: Text(
-                    'Me',
-                    style: TextStyle(
-                      color: Colors.teal[800],
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+              FutureBuilder<kakao.User?>(
+                future: KakaoService.getMeSafe(),
+                builder: (context, snapshot) {
+                  final profileUrl = snapshot.data?.kakaoAccount?.profile?.profileImageUrl;
+                  return Semantics(
+                    label: '프로필 이미지',
+                    child: CircleAvatar(
+                      radius: 30,
+                      backgroundColor: Colors.teal[100],
+                      backgroundImage: profileUrl != null ? NetworkImage(profileUrl) : null,
+                      child: profileUrl == null
+                          ? Text(
+                              'Me',
+                              style: TextStyle(
+                                color: Colors.teal[800],
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            )
+                          : null,
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
               
               const SizedBox(width: 16),
@@ -51,22 +62,34 @@ class ProfileInfoCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '에코세이버',
+                    FutureBuilder<kakao.User?>(
+                      future: KakaoService.getMeSafe(),
+                      builder: (context, snapshot) {
+                        final nickname = snapshot.data?.kakaoAccount?.profile?.nickname ?? '에코세이버';
+                        return Text(
+                          nickname,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
                         Expanded(
-                          child: Text(
-                            'ecosaver@email.com',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.grey[600],
-                            ),
+                          child: FutureBuilder<kakao.User?>(
+                            future: KakaoService.getMeSafe(),
+                            builder: (context, snapshot) {
+                              final email = snapshot.data?.kakaoAccount?.email ?? '';
+                              return Text(
+                                email.isEmpty ? ' ' : email,
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: Colors.grey[600],
+                                ),
+                              );
+                            },
                           ),
                         ),
                         // 프로필 수정 버튼
