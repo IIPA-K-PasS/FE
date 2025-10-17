@@ -22,54 +22,71 @@ class _SplashScreenState extends State<SplashScreen> {
 
   _navigateToLogin() async {
     await Future.delayed(const Duration(milliseconds: 1200));
-    try {
-      // 조용한 로그인: 기존 토큰으로 서버 로그인 시도
-      try {
-        // 기존 토큰 확인 (카카오 창 뜨지 않음)
-        final accessTokenInfo = await UserApi.instance.accessTokenInfo();
-        if (accessTokenInfo == null) {
-          if (!mounted) return _goLogin();
-          return _goLogin();
-        }
-        
-        // 기존 토큰으로 사용자 정보 확인 (세션 검증)
-        await UserApi.instance.me();
-
-        // Kakao SDK에 저장된 토큰 조회
-        final OAuthToken? stored = await TokenManagerProvider.instance.manager.getToken();
-        final accessToken = stored?.accessToken ?? '';
-        if (accessToken.isEmpty) {
-          if (!mounted) return _goLogin();
-          return _goLogin();
-        }
-        
-        // 서버 로그인 시도 (accessToken 사용)
-        final ok = await AuthService.loginWithKakaoAccessToken(accessToken);
-        if (!mounted) return;
-        if (ok) {
-          Navigator.pushReplacement(
-            context,
-            FadeRoute(page: const MainNavigationPage()),
-          );
-        } else {
-          _goLogin();
-        }
-      } catch (_) {
-        // 세션 없거나 실패하면 로그인 화면으로 이동
-        if (!mounted) return _goLogin();
-        return _goLogin();
-      }
-    } catch (_) {
-      _goLogin();
-    }
-  }
-
-  void _goLogin() {
+    
     if (!mounted) return;
+
+    // TODO: 로그인 테스트를 위해 자동 로그인 임시 비활성화
+    // 항상 로그인 화면으로 이동
     Navigator.pushReplacement(
       context,
       FadeRoute(page: const LoginScreen()),
     );
+
+    /* 자동 로그인 로직 (테스트 후 활성화)
+    // 카카오 SDK 세션 자동 로그인 시도
+    bool autoLoginSuccess = false;
+    
+    try {
+      // 1. 카카오 SDK에 유효한 토큰이 있는지 확인
+      if (await AuthApi.instance.hasToken()) {
+        try {
+          // 2. 토큰 유효성 검사
+          AccessTokenInfo tokenInfo = await UserApi.instance.accessTokenInfo();
+          debugPrint('✅ 카카오 토큰 유효 (만료: ${tokenInfo.expiresIn}초 남음)');
+          
+          // 3. 카카오 사용자 정보 가져오기
+          User kakaoUser = await UserApi.instance.me();
+          
+          // 4. idToken이 있으면 서버 로그인 시도
+          final token = await TokenManagerProvider.instance.manager.getToken();
+          if (token?.idToken != null) {
+            debugPrint('🔑 idToken으로 서버 로그인 시도');
+            final serverLoginSuccess = await AuthService.loginWithKakaoIdToken(token!.idToken!);
+            
+            if (serverLoginSuccess) {
+              debugPrint('🎉 자동 로그인 성공 - 메인 화면으로 이동');
+              autoLoginSuccess = true;
+            } else {
+              debugPrint('⚠️ 서버 로그인 실패 - 로그인 화면으로 이동');
+            }
+          } else {
+            debugPrint('⚠️ idToken이 없음 - 재로그인 필요');
+          }
+        } catch (e) {
+          debugPrint('❌ 카카오 토큰 검증 실패: $e');
+          // 토큰이 만료되었거나 유효하지 않음
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ 자동 로그인 에러: $e');
+    }
+
+    if (!mounted) return;
+
+    if (autoLoginSuccess) {
+      // 자동 로그인 성공 → 메인 화면으로
+      Navigator.pushReplacement(
+        context,
+        FadeRoute(page: const MainNavigationPage()),
+      );
+    } else {
+      // 자동 로그인 실패 → 로그인 화면으로
+      Navigator.pushReplacement(
+        context,
+        FadeRoute(page: const LoginScreen()),
+      );
+    }
+    */
   }
 
   @override
