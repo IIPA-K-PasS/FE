@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../services/auth_service.dart';
 import '../../../../services/kakao_service.dart';
+import '../../../terms/presentation/terms_management_screen.dart';
 
 class SettingsSection extends StatelessWidget {
   const SettingsSection({super.key});
@@ -66,6 +67,72 @@ class SettingsSection extends StatelessWidget {
               ),
               title: Text(
                 '알림 설정',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+                  trailing: Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.grey[400],
+                size: 16,
+              ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        
+        const SizedBox(height: 8),
+        
+        // 약관 및 정책
+        Material(
+          color: Colors.transparent,
+          child: Semantics(
+            label: '약관 및 정책',
+            button: true,
+            child: Ink(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    spreadRadius: 1,
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const TermsManagementScreen(),
+                    ),
+                  );
+                },
+                child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
+              ),
+              leading: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.green[100],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.description,
+                  color: Colors.green[600],
+                  size: 20,
+                ),
+              ),
+              title: Text(
+                '약관 및 정책',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w500,
                 ),
