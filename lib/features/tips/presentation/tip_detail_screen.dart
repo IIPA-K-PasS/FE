@@ -1,19 +1,98 @@
 import 'package:flutter/material.dart';
 import '../data/tip_api_service.dart';
 import '../data/models/tip_models.dart';
+import '../../bookmark/data/bookmark_api_service.dart';
+import '../../user/data/user_api_service.dart';
 import 'package:intl/intl.dart';
 
-class TipDetailScreen extends StatelessWidget {
+class TipDetailScreen extends StatefulWidget {
   final int tipId;
 
   const TipDetailScreen({super.key, required this.tipId});
+
+  @override
+  State<TipDetailScreen> createState() => _TipDetailScreenState();
+}
+
+class _TipDetailScreenState extends State<TipDetailScreen> {
+  bool _isBookmarked = false;
+  bool _isLoadingBookmark = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkBookmarkStatus();
+  }
+
+  Future<void> _checkBookmarkStatus() async {
+    try {
+      final bookmarks = await UserApiService.fetchBookmarks();
+      setState(() {
+        _isBookmarked = bookmarks.any((bookmark) => bookmark.tipId == widget.tipId);
+      });
+    } catch (e) {
+      debugPrint('[TipDetail] Failed to check bookmark status: $e');
+    }
+  }
+
+  Future<void> _toggleBookmark() async {
+    if (_isLoadingBookmark) return;
+
+    setState(() {
+      _isLoadingBookmark = true;
+    });
+
+    try {
+      final success = await BookmarkApiService.toggleBookmark(
+        widget.tipId,
+        !_isBookmarked,
+      );
+
+      if (success) {
+        setState(() {
+          _isBookmarked = !_isBookmarked;
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _isBookmarked ? '북마크에 추가했어요! 💖' : '북마크에서 제거했어요',
+            ),
+            backgroundColor: _isBookmarked ? Colors.teal : Colors.grey[600],
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('북마크 처리에 실패했어요 😢'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('[TipDetail] Bookmark toggle failed: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('북마크 처리에 실패했어요 😢'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } finally {
+      setState(() {
+        _isLoadingBookmark = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7F9),
       body: FutureBuilder<TipDetail?>(
-        future: TipApiService.fetchTipDetail(tipId),
+        future: TipApiService.fetchTipDetail(widget.tipId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
@@ -64,6 +143,30 @@ class TipDetailScreen extends StatelessWidget {
                 backgroundColor: Colors.white,
                 foregroundColor: Colors.black,
                 elevation: 0,
+                actions: [
+                  // 북마크 버튼
+                  Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: IconButton(
+                      onPressed: _isLoadingBookmark ? null : _toggleBookmark,
+                      icon: _isLoadingBookmark
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.teal,
+                              ),
+                            )
+                          : Icon(
+                              _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                              color: _isBookmarked ? Colors.teal : Colors.grey[600],
+                              size: 28,
+                            ),
+                      tooltip: _isBookmarked ? '북마크 제거' : '북마크 추가',
+                    ),
+                  ),
+                ],
                 flexibleSpace: FlexibleSpaceBar(
                   background: tip.imageUrl.isNotEmpty
                       ? Image.network(

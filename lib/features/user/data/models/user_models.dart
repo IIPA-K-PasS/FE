@@ -168,3 +168,39 @@ class CompletedChallenge {
   Map<String, dynamic> toJson() => _$CompletedChallengeToJson(this);
 }
 
+// ==================== POST /bookmark ====================
+
+@JsonSerializable()
+class BookmarkRequest {
+  final int tipId;
+  final bool isBookmarked;
+
+  BookmarkRequest({
+    required this.tipId,
+    required this.isBookmarked,
+  });
+
+  factory BookmarkRequest.fromJson(Map<String, dynamic> json) =>
+      _$BookmarkRequestFromJson(json);
+  Map<String, dynamic> toJson() => _$BookmarkRequestToJson(this);
+}
+
+@JsonSerializable()
+class BookmarkResponse {
+  final bool isSuccess;
+  final String code;
+  final String message;
+  final String result;
+
+  BookmarkResponse({
+    required this.isSuccess,
+    required this.code,
+    required this.message,
+    required this.result,
+  });
+
+  factory BookmarkResponse.fromJson(Map<String, dynamic> json) =>
+      _$BookmarkResponseFromJson(json);
+  Map<String, dynamic> toJson() => _$BookmarkResponseToJson(this);
+}
+
