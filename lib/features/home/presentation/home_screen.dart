@@ -124,7 +124,7 @@ class _HomePageState extends State<HomeScreen> {
                   color: const Color(0xFFFBC02D),
                   onPressed: () {
                     // onPressed 내부에서 _pickImageAndNavigate를 호출합니다.
-                    _showImageSourceDialog(context, 'ELECTRICITY');
+                      _pickImageAndNavigate ('ELECTRICITY');
                   }),
               const SizedBox(height: 12),
 
@@ -133,7 +133,7 @@ class _HomePageState extends State<HomeScreen> {
                   label: '수도 요금',
                   color: const Color(0xFF1976D2),
                   onPressed: () {
-                    _showImageSourceDialog(context, 'WATER');
+                    _pickImageAndNavigate('WATER');
                   }),
               const SizedBox(height: 12),
 
@@ -142,7 +142,7 @@ class _HomePageState extends State<HomeScreen> {
                   label: '가스 요금',
                   color: const Color(0xFFD32F2F),
                   onPressed: () {
-                    _showImageSourceDialog(context, 'GAS');
+                    _pickImageAndNavigate('GAS');
                   }),
             ],
           ),
@@ -151,20 +151,24 @@ class _HomePageState extends State<HomeScreen> {
     );
   }
 
-  Future<void> _pickImageAndNavigate(String billType, ImageSource source) async {
+  Future<void> _pickImageAndNavigate(String billType) async {
     final ImagePicker picker = ImagePicker();
 
+    if (mounted) Navigator.pop(context);
+
     try {
-      // 전달받은 source를 사용하여 이미지 선택
-      final XFile? pickedFile = await picker.pickImage(source: source);
+      final XFile? pickedFile = await picker.pickImage(
+          source: ImageSource.camera);
 
       if (pickedFile != null && mounted) {
+        // BillPreviewScreen으로 이동하고, BillEntity 타입의 결과를 기다립니다.
         final result = await Navigator.of(context).push<BillEntity>(
           MaterialPageRoute(
-            builder: (context) => BillPreviewScreen(
-              imageFile: pickedFile,
-              billType: billType,
-            ),
+            builder: (context) =>
+                BillPreviewScreen(
+                  imageFile: pickedFile,
+                  billType: billType,
+                ),
           ),
         );
 
@@ -177,7 +181,7 @@ class _HomePageState extends State<HomeScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('이미지를 가져오는 중 오류 발생: $e')),
+          SnackBar(content: Text('오류가 발생했습니다: $e')),
         );
       }
     }
@@ -250,42 +254,6 @@ class _HomePageState extends State<HomeScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _loadHomeData();
       });
-    }
-  }
-
-  // ⭐ 새로운 함수: 카메라/갤러리 선택 다이얼로그 표시
-  Future<void> _showImageSourceDialog(BuildContext context, String billType) async {
-    // 이전 모달을 먼저 닫습니다.
-    Navigator.pop(context);
-
-    // 선택 다이얼로그를 띄웁니다.
-    ImageSource? source = await showDialog<ImageSource>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('사진 가져오기'),
-          content: const Text('어디에서 사진을 가져올까요?'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('앨범'),
-              onPressed: () {
-                Navigator.of(context).pop(ImageSource.gallery);
-              },
-            ),
-            TextButton(
-              child: const Text('카메라'),
-              onPressed: () {
-                Navigator.of(context).pop(ImageSource.camera);
-              },
-            ),
-          ],
-        );
-      },
-    );
-
-    // 사용자가 소스를 선택했다면 해당 함수 호출
-    if (source != null) {
-      _pickImageAndNavigate(billType, source);
     }
   }
 }
