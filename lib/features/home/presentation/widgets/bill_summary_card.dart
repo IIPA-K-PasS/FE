@@ -4,11 +4,13 @@ import 'package:intl/intl.dart';
 class BillSummaryCard extends StatelessWidget {
   final int? amount;
   final VoidCallback onScanPressed;
+  final VoidCallback? onViewReportPressed;
 
   const BillSummaryCard({
     super.key,
     this.amount,
     required this.onScanPressed,
+    this.onViewReportPressed,
   });
 
   // 금액을 콤마(,) 포맷으로 변환해주는 헬퍼 함수
@@ -36,7 +38,28 @@ class BillSummaryCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('6월 고지서 요약', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('6월 고지서 요약', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+              if (onViewReportPressed != null)
+                GestureDetector(
+                  onTap: onViewReportPressed,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ),
+            ],
+          ),
           const SizedBox(height: 16),
           const Text('이번 달 총 요금', style: TextStyle(fontSize: 14, color: Colors.black54)),
           const SizedBox(height: 8),

@@ -6,6 +6,7 @@ import 'bill_preview_screen.dart';
 import 'widgets/ai_saving_forecast_card.dart';
 import 'widgets/bill_summary_card.dart';
 import 'widgets/neighborhood_comparison_card.dart';
+import '../../bills/presentation/monthly_report_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -37,6 +38,7 @@ class _HomePageState extends State<HomeScreen> {
               BillSummaryCard(
                 amount: _scannedAmount,
                 onScanPressed: _showBillTypeSelectionSheet,
+                onViewReportPressed: _navigateToMonthlyReport,
               ),
 
               const SizedBox(height: 20),
@@ -162,5 +164,13 @@ class _HomePageState extends State<HomeScreen> {
         );
       }
     }
+  }
+
+  void _navigateToMonthlyReport() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const MonthlyReportScreen(year: 2025, month: 6),
+      ),
+    );
   }
 }
