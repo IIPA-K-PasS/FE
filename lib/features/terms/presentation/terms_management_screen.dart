@@ -48,13 +48,14 @@ class _TermsManagementScreenState extends State<TermsManagementScreen> {
   Future<void> _updateTermAgreement(int index, bool agreed) async {
     final term = _terms[index];
 
-    // 필수 약관은 변경 불가
-    if (term.isRequired && !agreed) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('필수 약관은 동의를 철회할 수 없습니다')),
-      );
-      return;
-    }
+    // 임시로 필수 약관도 토글 가능하게 수정 (테스트용)
+    // TODO: 실제 서비스에서는 필수 약관 철회 방지 로직 활성화
+    // if (term.isRequired && !agreed) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(content: Text('필수 약관은 동의를 철회할 수 없습니다')),
+    //   );
+    //   return;
+    // }
 
     // 로딩 표시
     showDialog(
@@ -248,17 +249,12 @@ class _TermsManagementScreenState extends State<TermsManagementScreen> {
                 ),
 
                 // 토글 또는 화살표
-                if (isRequired)
-                  // 필수 약관: 보기만
-                  Icon(Icons.arrow_forward_ios,
-                      size: 16, color: Colors.grey[400])
-                else
-                  // 선택 약관: 토글 가능
-                  Switch(
-                    value: term.agreed,
-                    onChanged: (value) => _updateTermAgreement(index, value),
-                    activeColor: Colors.teal,
-                  ),
+                // 임시로 모든 약관에 토글 표시 (테스트용)
+                Switch(
+                  value: term.agreed,
+                  onChanged: (value) => _updateTermAgreement(index, value),
+                  activeColor: Colors.teal,
+                ),
               ],
             ),
           ),
