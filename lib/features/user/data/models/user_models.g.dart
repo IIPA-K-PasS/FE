@@ -150,3 +150,31 @@ Map<String, dynamic> _$CompletedChallengeToJson(CompletedChallenge instance) =>
       'rewardPoints': instance.rewardPoints,
       'imageUrl': instance.imageUrl,
     };
+
+BookmarkRequest _$BookmarkRequestFromJson(Map<String, dynamic> json) =>
+    BookmarkRequest(
+      tipId: (json['tipId'] as num).toInt(),
+      isBookmarked: json['isBookmarked'] as bool,
+    );
+
+Map<String, dynamic> _$BookmarkRequestToJson(BookmarkRequest instance) =>
+    <String, dynamic>{
+      'tipId': instance.tipId,
+      'isBookmarked': instance.isBookmarked,
+    };
+
+BookmarkResponse _$BookmarkResponseFromJson(Map<String, dynamic> json) =>
+    BookmarkResponse(
+      isSuccess: json['isSuccess'] as bool,
+      code: json['code'] as String,
+      message: json['message'] as String,
+      result: json['result'] as String,
+    );
+
+Map<String, dynamic> _$BookmarkResponseToJson(BookmarkResponse instance) =>
+    <String, dynamic>{
+      'isSuccess': instance.isSuccess,
+      'code': instance.code,
+      'message': instance.message,
+      'result': instance.result,
+    };

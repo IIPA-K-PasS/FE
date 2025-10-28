@@ -27,6 +27,9 @@ class ApiConfig {
   // Terms
   static const String terms = '/term';
 
+  // Bookmark
+  static const String bookmark = '/bookmark';
+
   // Headers
   static const Map<String, String> defaultHeaders = {
     'Content-Type': 'application/json',
