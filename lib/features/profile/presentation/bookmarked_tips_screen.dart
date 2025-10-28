@@ -123,14 +123,16 @@ class _BookmarkedTipsScreenState extends State<BookmarkedTipsScreen> {
                           final tip = _bookmarks[index];
                           return _BookmarkCard(
                             tip: tip,
-                            onTap: () {
-                              Navigator.push(
+                            onTap: () async {
+                              await Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (_) =>
                                       TipDetailScreen(tipId: tip.tipId),
                                 ),
                               );
+                              // 꿀팁 상세 화면에서 돌아온 후 북마크 목록 새로고침
+                              _loadBookmarks();
                             },
                           );
                         },
