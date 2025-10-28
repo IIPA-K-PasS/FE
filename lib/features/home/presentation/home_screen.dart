@@ -1,11 +1,14 @@
 import 'package:billow/features/home/presentation/widgets/bill_type_selection_button.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import '../data/weather_api_service.dart';
 import '../domain/bill_entity.dart';
 import 'bill_preview_screen.dart';
+import 'neighborhood_setting_screen.dart';
 import 'widgets/ai_saving_forecast_card.dart';
 import 'widgets/bill_summary_card.dart';
 import 'widgets/neighborhood_comparison_card.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,12 +19,21 @@ class HomeScreen extends StatefulWidget {
 
 class _HomePageState extends State<HomeScreen> {
   int? _scannedAmount;
+  WeatherData? _weatherData;
+  String _locationName = '위치 정보 없음';
+  bool _isLoadingWeather = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHomeData();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      body:  SafeArea(
+      body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
           child: Column(
@@ -29,7 +41,11 @@ class _HomePageState extends State<HomeScreen> {
               const SizedBox(height: 8),
 
               // 첫 번째 카드: AI 절약 예보
-              const AISavingForecastCard(),
+              AISavingForecastCard(
+                isLoading: _isLoadingWeather,
+                weatherData: _weatherData,
+                locationName: _locationName,
+              ),
 
               const SizedBox(height: 20),
 
@@ -42,7 +58,9 @@ class _HomePageState extends State<HomeScreen> {
               const SizedBox(height: 20),
 
               // 세 번째 카드: 우리 동네 비교
-              const NeighborhoodComparisonCard(),
+              NeighborhoodComparisonCard(
+                onPressed: _navigateToNeighborhoodSetting,
+              ),
 
               const SizedBox(height: 20), // 하단 여백
             ],
@@ -62,7 +80,10 @@ class _HomePageState extends State<HomeScreen> {
         // 모달 UI는 기존과 거의 동일 (onPressed 부분만 수정)
         return Container(
           // height 속성을 추가하여 높이를 지정합니다.
-          height: MediaQuery.of(context).size.height * 0.45,
+          height: MediaQuery
+              .of(context)
+              .size
+              .height * 0.45,
           padding: const EdgeInsets.all(20.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -103,7 +124,7 @@ class _HomePageState extends State<HomeScreen> {
                   color: const Color(0xFFFBC02D),
                   onPressed: () {
                     // onPressed 내부에서 _pickImageAndNavigate를 호출합니다.
-                    _pickImageAndNavigate('ELECTRICITY');
+                      _pickImageAndNavigate ('ELECTRICITY');
                   }),
               const SizedBox(height: 12),
 
@@ -133,19 +154,21 @@ class _HomePageState extends State<HomeScreen> {
   Future<void> _pickImageAndNavigate(String billType) async {
     final ImagePicker picker = ImagePicker();
 
-    if(mounted) Navigator.pop(context);
+    if (mounted) Navigator.pop(context);
 
     try {
-      final XFile? pickedFile = await picker.pickImage(source: ImageSource.camera);
+      final XFile? pickedFile = await picker.pickImage(
+          source: ImageSource.camera);
 
       if (pickedFile != null && mounted) {
         // BillPreviewScreen으로 이동하고, BillEntity 타입의 결과를 기다립니다.
         final result = await Navigator.of(context).push<BillEntity>(
           MaterialPageRoute(
-            builder: (context) => BillPreviewScreen(
-              imageFile: pickedFile,
-              billType: billType,
-            ),
+            builder: (context) =>
+                BillPreviewScreen(
+                  imageFile: pickedFile,
+                  billType: billType,
+                ),
           ),
         );
 
@@ -156,11 +179,81 @@ class _HomePageState extends State<HomeScreen> {
         }
       }
     } catch (e) {
-      if(mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('오류가 발생했습니다: $e')),
         );
       }
+    }
+  }
+
+  // 홈 화면에 필요한 모든 데이터를 로드하는 함수
+  Future<void> _loadHomeData() async {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() { _isLoadingWeather = true; });
+      }
+    });
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final double? lat = prefs.getDouble('user_latitude');
+      final double? lon = prefs.getDouble('user_longitude');
+      final String? fullLocationName = prefs.getString('user_location_name');
+
+      WeatherData? newWeatherData;
+      String newLocationName = '위치 정보 없음';
+
+      if (lat != null && lon != null && fullLocationName != null) {
+        final weatherService = WeatherApiService();
+        newWeatherData = await weatherService.getWeather(lat, lon);
+
+        // 주소를 공백으로 분리합니다. 예: "서울특별시 중구 명동" -> ["서울특별시", "중구", "명동"]
+        final addressParts = fullLocationName.split(' ');
+
+        // 분리된 주소 부분이 2개 이상이면 앞의 두 부분만 합칩니다.
+        if (addressParts.length >= 2) {
+          // 예: "서울특별시 중구"
+          newLocationName = '${addressParts[0]} ${addressParts[1]}';
+        } else {
+          // 주소가 한 단어이거나 특이한 경우 그대로 사용합니다.
+          newLocationName = fullLocationName;
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _weatherData = newWeatherData;
+          _locationName = newLocationName;
+          _isLoadingWeather = false;
+        });
+      }
+
+    } catch (e) {
+      print('날씨 데이터 로딩 실패: $e');
+      if (mounted) {
+        setState(() {
+          _locationName = '위치 정보 없음';
+          _weatherData = null;
+          _isLoadingWeather = false;
+        });
+      }
+    }
+  }
+
+  // '내 동네 설정하기' 화면으로 이동하고, 완료 시 데이터를 새로고침하는 함수
+  Future<void> _navigateToNeighborhoodSetting() async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (context) => const NeighborhoodSettingScreen()),
+    );
+
+    if (result == true && mounted) {
+      // 현재 프레임의 렌더링이 완료된 직후에 _loadHomeData를 호출합니다.
+      // 이렇게 하면 화면 전환과 setState 충돌을 방지할 수 있습니다.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _loadHomeData();
+      });
     }
   }
 }

@@ -7,13 +7,18 @@ import 'package:http/http.dart' as http;
 class Address {
   final String roadAddress;
   final String jibunAddress;
+  final double lat;
+  final double lon;
 
-  Address({required this.roadAddress, required this.jibunAddress});
+  Address({required this.roadAddress, required this.jibunAddress, required this.lat, required this.lon});
 
   factory Address.fromJson(Map<String, dynamic> json) {
     return Address(
       roadAddress: json['roadAddress'] ?? '',
       jibunAddress: json['jibunAddress'] ?? '',
+      // 네이버 API는 x가 경도(lon), y가 위도(lat)입니다.
+      lat: double.tryParse(json['y'] ?? '0.0') ?? 0.0,
+      lon: double.tryParse(json['x'] ?? '0.0') ?? 0.0,
     );
   }
 }
