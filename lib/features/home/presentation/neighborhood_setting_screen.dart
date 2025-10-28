@@ -1,6 +1,7 @@
 import 'package:billow/features/home/data/naver_map_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NeighborhoodSettingScreen extends StatefulWidget {
   const NeighborhoodSettingScreen({super.key});
@@ -38,20 +39,54 @@ class _NeighborhoodSettingScreenState extends State<NeighborhoodSettingScreen> {
       });
     }
   }
-
-  Future<void> _findCurrentLocation() async {
+  // 선택된 위치 정보를 저장하고 이전 화면으로 돌아가는 함수
+  Future<void> _saveLocationAndExit(double lat, double lon, String locationName) async {
+    setState(() { _isLoading = true; }); // 저장 중 로딩 표시 (선택 사항)
     try {
-      Position position = await _determinePosition();
-      final address = await _apiService.coordToAddress(position.latitude, position.longitude);
-      // TODO: 찾은 주소로 동네 설정 로직 구현
-      if(mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('현재 동네: $address')));
-        Navigator.of(context).pop();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setDouble('user_latitude', lat);
+      await prefs.setDouble('user_longitude', lon);
+      await prefs.setString('user_location_name', locationName);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('동네가 \'$locationName\'으로 설정되었습니다.')),
+        );
+        // ⭐ 변경점: 저장이 완료된 후에 pop을 호출합니다.
+        Navigator.of(context).pop(true);
       }
     } catch (e) {
+      print("위치 저장 실패: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('동네 저장 중 오류가 발생했습니다.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() { _isLoading = false; });
+    }
+  }
+
+
+  Future<void> _findCurrentLocation() async {
+    setState(() { _isLoading = true; }); // 현재 위치 찾는 중 로딩 표시
+    try {
+      Position position = await _determinePosition();
+      // --- 디버깅 코드 추가 ---
+      print('✅ 현재 위치 좌표: Lat ${position.latitude}, Lon ${position.longitude}');
+      // ---------------------
+
+      final address = await _apiService.coordToAddress(position.latitude, position.longitude);
+      // --- 디버깅 코드 추가 ---
+      print('✅ 변환된 주소: $address');
+      await _saveLocationAndExit(position.latitude, position.longitude, address);
+    } catch (e) {
+      print("현재 위치 찾기 오류: $e");
       if(mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
       }
+    } finally {
+      if (mounted) setState(() { _isLoading = false; }); // 로딩 종료
     }
   }
 
@@ -157,8 +192,8 @@ class _NeighborhoodSettingScreenState extends State<NeighborhoodSettingScreen> {
         return ListTile(
           title: Text(address.roadAddress),
           subtitle: Text('[지번] ${address.jibunAddress}'),
-          onTap: () {
-            // TODO: 주소 선택 후 동네 설정 로직 구현
+          onTap: () async {
+            await _saveLocationAndExit(address.lat, address.lon, address.roadAddress);
             print('선택된 주소: ${address.roadAddress}');
             Navigator.of(context).pop();
           },
