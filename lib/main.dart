@@ -12,13 +12,13 @@ Future<void> main() async {
 
   // .env 파일 로드
   await dotenv.load(fileName: '.env');
-  
+
   // 환경변수에서 카카오 네이티브 앱 키 가져오기
   final kakaoNativeAppKey = dotenv.env['KAKAO_NATIVE_APP_KEY'];
   if (kakaoNativeAppKey == null || kakaoNativeAppKey.isEmpty) {
     throw Exception('KAKAO_NATIVE_APP_KEY is not set in .env file');
   }
-  
+
   KakaoSdk.init(nativeAppKey: kakaoNativeAppKey);
   runApp(const MyApp());
 }

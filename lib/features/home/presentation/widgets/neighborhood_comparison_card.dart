@@ -1,10 +1,13 @@
-import 'package:billow/core/animation/slide_route.dart';
 import 'package:flutter/material.dart';
 
-import '../neighborhood_setting_screen.dart';
-
 class NeighborhoodComparisonCard extends StatelessWidget {
-  const NeighborhoodComparisonCard({super.key});
+  // 1. 부모 위젯(HomeScreen)으로부터 버튼 클릭 시 실행할 함수를 전달받기 위한 변수
+  final VoidCallback onPressed;
+
+  const NeighborhoodComparisonCard({
+    super.key,
+    required this.onPressed, // 2. 생성자에 onPressed를 필수로 받도록 추가
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +38,9 @@ class NeighborhoodComparisonCard extends StatelessWidget {
               color: Colors.black87,
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // 중앙 아이콘
           Center(
             child: Container(
@@ -54,9 +57,9 @@ class NeighborhoodComparisonCard extends StatelessWidget {
               ),
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // 플레이스홀더 텍스트
           const Center(
             child: Text(
@@ -74,12 +77,8 @@ class NeighborhoodComparisonCard extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  SlideRoute(page: NeighborhoodSettingScreen()),
-                );
-              },
+              // 3. Navigator.push 대신, 부모로부터 전달받은 onPressed 함수를 실행
+              onPressed: onPressed,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.black,
                 foregroundColor: Colors.white,
@@ -103,3 +102,4 @@ class NeighborhoodComparisonCard extends StatelessWidget {
     );
   }
 }
+
