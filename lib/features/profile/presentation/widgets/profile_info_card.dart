@@ -280,7 +280,6 @@ class _ProfileInfoCardState extends State<ProfileInfoCard> {
                         ],
                       ),
                     ),
-                    const GreenMarketButton()
                   ],
                 ),
     );

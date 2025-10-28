@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'widgets/profile_info_card.dart';
-//import 'widgets/green_market_button.dart';
+import 'widgets/green_market_button.dart';
 import 'widgets/activity_section.dart';
 import 'widgets/settings_section.dart';
+import '../../green_market/presentation/green_market_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -25,9 +26,18 @@ class ProfileScreen extends StatelessWidget {
               const SizedBox(height: 16),
               
               // 그린 마켓 버튼
-              //const GreenMarketButton(),
+              GreenMarketButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const GreenMarketScreen(),
+                    ),
+                  );
+                },
+              ),
               
-              //const SizedBox(height: 24),
+              const SizedBox(height: 24),
               
               // 나의 활동 섹션
               const ActivitySection(),
