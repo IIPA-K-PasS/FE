@@ -177,32 +177,122 @@ class _CompareBar extends StatelessWidget {
         const Text('전월 대비 사용량', style: TextStyle(fontWeight: FontWeight.w700)),
         const SizedBox(height: 12),
         SizedBox(
-          height: 160,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              _bar(value: previous.toDouble(), max: max, color: Colors.grey[400]!, label: '지난달'),
-              const SizedBox(width: 28),
-              _bar(value: current.toDouble(), max: max, color: color, label: '이번달'),
-            ],
+          height: 180,
+          child: CustomPaint(
+            painter: _BarChartPainter(
+              previous: previous.toDouble(),
+              current: current.toDouble(),
+              max: max,
+              previousColor: Colors.grey[400]!,
+              currentColor: color,
+            ),
+            child: const SizedBox.expand(),
           ),
         ),
       ]),
     );
   }
+}
 
-  Widget _bar({required double value, required double max, required Color color, required String label}){
-    final double h = (value==0||max==0)? 2 : (value/max*120)+2;
-    return Expanded(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          Container(height: h, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(8))),
-          const SizedBox(height: 8),
-          Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-        ],
+class _BarChartPainter extends CustomPainter {
+  final double previous;
+  final double current;
+  final double max;
+  final Color previousColor;
+  final Color currentColor;
+
+  _BarChartPainter({
+    required this.previous,
+    required this.current,
+    required this.max,
+    required this.previousColor,
+    required this.currentColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint gridPaint = Paint()
+      ..color = Colors.grey[300]!
+      ..strokeWidth = 1;
+
+    final Paint barPaint = Paint()..style = PaintingStyle.fill;
+
+    // Y축 격자선과 라벨 그리기
+    final double stepY = max / 4; // 4개 구간으로 나누기
+    for (int i = 0; i <= 4; i++) {
+      final double y = size.height - (i * size.height / 4);
+      final double value = i * stepY;
+      
+      // 격자선 그리기
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
+      
+      // Y축 라벨 그리기
+      final textPainter = TextPainter(
+        text: TextSpan(
+          text: '${(value / 1000).toStringAsFixed(0)}k',
+          style: TextStyle(color: Colors.grey[600], fontSize: 10),
+        ),
+        textDirection: TextDirection.ltr,
+      );
+      textPainter.layout();
+      textPainter.paint(canvas, Offset(-30, y - textPainter.height / 2));
+    }
+
+    // 막대 그래프 그리기
+    final double barWidth = (size.width - 60) / 2; // 두 막대 + 간격
+    final double barSpacing = 20;
+    
+    // 지난달 막대
+    final double previousHeight = (previous / max * (size.height - 40)).clamp(2, size.height - 40);
+    barPaint.color = previousColor;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(10, size.height - previousHeight - 20, barWidth, previousHeight),
+        const Radius.circular(8),
       ),
+      barPaint,
     );
+
+    // 이번달 막대
+    final double currentHeight = (current / max * (size.height - 40)).clamp(2, size.height - 40);
+    barPaint.color = currentColor;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(barWidth + barSpacing + 10, size.height - currentHeight - 20, barWidth, currentHeight),
+        const Radius.circular(8),
+      ),
+      barPaint,
+    );
+
+    // 라벨 그리기
+    final labelPainter1 = TextPainter(
+      text: const TextSpan(
+        text: '지난달',
+        style: TextStyle(color: Colors.grey, fontSize: 12),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    labelPainter1.layout();
+    labelPainter1.paint(canvas, Offset(10 + barWidth / 2 - labelPainter1.width / 2, size.height - 15));
+
+    final labelPainter2 = TextPainter(
+      text: const TextSpan(
+        text: '이번달',
+        style: TextStyle(color: Colors.grey, fontSize: 12),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    labelPainter2.layout();
+    labelPainter2.paint(canvas, Offset(barWidth + barSpacing + 10 + barWidth / 2 - labelPainter2.width / 2, size.height - 15));
+  }
+
+  @override
+  bool shouldRepaint(covariant _BarChartPainter oldDelegate) {
+    return oldDelegate.previous != previous ||
+        oldDelegate.current != current ||
+        oldDelegate.max != max ||
+        oldDelegate.previousColor != previousColor ||
+        oldDelegate.currentColor != currentColor;
   }
 }
 
@@ -288,7 +378,7 @@ class _LineTrend extends StatelessWidget {
         const Text('최근 6개월 요금 변화', style: TextStyle(fontWeight: FontWeight.w700)),
         const SizedBox(height: 12),
         SizedBox(
-          height: 180,
+          height: 200,
           child: CustomPaint(
             painter: _LineChartPainter(points: trend, color: color, maxY: (max*1.2).toDouble()),
             child: const SizedBox.expand(),
@@ -305,27 +395,74 @@ class _LineChartPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final Paint grid = Paint()..color = Colors.grey[300]!..strokeWidth = 1;
-    final Paint line = Paint()..color = color..strokeWidth = 3..style = PaintingStyle.stroke;
-    final Paint dot = Paint()..color = color;
+    final Paint gridPaint = Paint()..color = Colors.grey[300]!..strokeWidth = 1;
+    final Paint linePaint = Paint()..color = color..strokeWidth = 3..style = PaintingStyle.stroke;
+    final Paint dotPaint = Paint()..color = color;
 
-    // grid
-    for (int i=0;i<4;i++){
-      final y = size.height/4*i;
-      canvas.drawLine(Offset(0,y), Offset(size.width,y), grid);
+    // Y축 격자선과 라벨 그리기
+    for (int i = 0; i <= 4; i++) {
+      final double y = size.height - (i * size.height / 4);
+      final double value = i * maxY / 4;
+      
+      // 격자선 그리기
+      canvas.drawLine(Offset(40, y), Offset(size.width, y), gridPaint);
+      
+      // Y축 라벨 그리기
+      final textPainter = TextPainter(
+        text: TextSpan(
+          text: '${(value / 1000).toStringAsFixed(0)}k',
+          style: TextStyle(color: Colors.grey[600], fontSize: 10),
+        ),
+        textDirection: TextDirection.ltr,
+      );
+      textPainter.layout();
+      textPainter.paint(canvas, Offset(5, y - textPainter.height / 2));
     }
 
+    // X축 격자선과 라벨 그리기
+    if (points.isNotEmpty) {
+      final double stepX = (size.width - 40) / (points.length - 1);
+      for (int i = 0; i < points.length; i++) {
+        final double x = 40 + stepX * i;
+        
+        // X축 격자선 그리기
+        canvas.drawLine(Offset(x, 0), Offset(x, size.height - 20), gridPaint);
+        
+        // X축 라벨 그리기
+        final textPainter = TextPainter(
+          text: TextSpan(
+            text: '${points[i].month}월',
+            style: TextStyle(color: Colors.grey[600], fontSize: 10),
+          ),
+          textDirection: TextDirection.ltr,
+        );
+        textPainter.layout();
+        textPainter.paint(canvas, Offset(x - textPainter.width / 2, size.height - 15));
+      }
+    }
+
+    // 라인 차트 그리기
     if (points.isEmpty) return;
-    final double stepX = size.width / (points.length-1).clamp(1, 6);
+    
+    final double stepX = (size.width - 40) / (points.length - 1);
     final Path path = Path();
-    for (int i=0;i<points.length;i++){
+    
+    for (int i = 0; i < points.length; i++) {
       final p = points[i];
-      final double x = stepX*i;
-      final double y = size.height - (p.fee/maxY*size.height).clamp(0, size.height);
-      if (i==0) path.moveTo(x, y); else path.lineTo(x, y);
-      canvas.drawCircle(Offset(x,y), 3, dot);
+      final double x = 40 + stepX * i;
+      final double y = size.height - 20 - (p.fee / maxY * (size.height - 40)).clamp(0, size.height - 40);
+      
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+      
+      // 데이터 포인트 그리기
+      canvas.drawCircle(Offset(x, y), 4, dotPaint);
     }
-    canvas.drawPath(path, line);
+    
+    canvas.drawPath(path, linePaint);
   }
 
   @override
