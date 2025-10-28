@@ -40,12 +40,14 @@ class Term {
   final String title;
   final String content;
   final bool agreed;
+  final String? contentUrl; // 웹뷰용 URL (선택사항)
 
   Term({
     required this.termId,
     required this.title,
     required this.content,
     required this.agreed,
+    this.contentUrl,
   });
 
   factory Term.fromJson(Map<String, dynamic> json) => _$TermFromJson(json);
@@ -66,6 +68,7 @@ class Term {
       title: title,
       content: content,
       agreed: agreed ?? this.agreed,
+      contentUrl: contentUrl,
     );
   }
 }
