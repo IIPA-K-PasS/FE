@@ -8,6 +8,7 @@ import 'neighborhood_setting_screen.dart';
 import 'widgets/ai_saving_forecast_card.dart';
 import 'widgets/bill_summary_card.dart';
 import 'widgets/neighborhood_comparison_card.dart';
+import '../../bills/presentation/monthly_report_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -53,6 +54,7 @@ class _HomePageState extends State<HomeScreen> {
               BillSummaryCard(
                 amount: _scannedAmount,
                 onScanPressed: _showBillTypeSelectionSheet,
+                onViewReportPressed: _navigateToMonthlyReport,
               ),
 
               const SizedBox(height: 20),
@@ -185,6 +187,14 @@ class _HomePageState extends State<HomeScreen> {
         );
       }
     }
+  }
+
+  void _navigateToMonthlyReport() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const MonthlyReportScreen(year: 2025, month: 6),
+      ),
+    );
   }
 
   // 홈 화면에 필요한 모든 데이터를 로드하는 함수

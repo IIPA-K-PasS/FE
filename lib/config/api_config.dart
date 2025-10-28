@@ -30,6 +30,11 @@ class ApiConfig {
   // Bookmark
   static const String bookmark = '/bookmark';
 
+  // Bills
+  static const String billsOcr = '/api/bills/ocr';
+  static const String billsSummary = '/api/bills/summary';
+  static const String billsReportDetail = '/api/bills/report/detail';
+
   // Headers
   static const Map<String, String> defaultHeaders = {
     'Content-Type': 'application/json',
