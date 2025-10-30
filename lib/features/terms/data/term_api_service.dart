@@ -7,6 +7,8 @@ import 'models/term_models.dart';
 class TermApiService {
   // 더미 데이터 상태 관리 (SharedPreferences로 영구 저장)
   static const String _prefsKeyPrefix = 'dummy_term_state_';
+  // 마지막 동의 상태 캐시 (백엔드 실패 시 사용)
+  static const String _cacheKeyPrefix = 'term_state_cache_';
   
   /// 더미 데이터 상태를 SharedPreferences에서 로드
   static Future<Map<int, bool>> _loadDummyTermStates() async {
@@ -51,6 +53,7 @@ class TermApiService {
           
           for (var term in termsResponse.result.terms) {
             debugPrint('[TermAPI]   - ${term.title}: agreed=${term.agreed}, required=${term.isRequired}');
+            await _saveCachedTermState(term.termId, term.agreed);
           }
           return termsResponse.result.terms;
         } else {
@@ -64,6 +67,11 @@ class TermApiService {
     } catch (e, stackTrace) {
       debugPrint('[TermAPI][ERROR] fetchTerms failed: $e');
       debugPrint('[TermAPI][ERROR] StackTrace: $stackTrace');
+      final cached = await _loadCachedTerms();
+      if (cached.isNotEmpty) {
+        debugPrint('[TermAPI] Using cached term states due to error');
+        return cached;
+      }
       return [];
     }
   }
@@ -165,24 +173,6 @@ class TermApiService {
         debugPrint('[TermAPI]   - termId: ${agreement.termId}, agreed: ${agreement.agreed}');
       }
 
-      // 더미 데이터 사용 중일 때는 API 호출하지 않고 성공으로 처리
-      final terms = await fetchTerms();
-      if (terms.isNotEmpty && terms.any((t) => t.termId <= 3)) {
-        debugPrint('[TermAPI] ⚠️ Using dummy data, updating SharedPreferences');
-        
-        // 더미 데이터 상태를 SharedPreferences에 저장
-        for (var agreement in agreements) {
-          if (agreement.termId >= 1 && agreement.termId <= 3) {
-            await _saveDummyTermState(agreement.termId, agreement.agreed);
-            debugPrint('[TermAPI] Updated dummy state: termId=${agreement.termId}, agreed=${agreement.agreed}');
-          }
-        }
-        
-        await Future.delayed(const Duration(milliseconds: 500)); // 로딩 시뮬레이션
-        debugPrint('[TermAPI] ✅ Dummy data agreement successful');
-        return true;
-      }
-
       final request = AgreeTermsRequest(terms: agreements);
       debugPrint('[TermAPI] Request data: ${request.toJson()}');
 
@@ -200,13 +190,25 @@ class TermApiService {
 
         if (agreeResponse.isSuccess) {
           debugPrint('[TermAPI] ✅ Terms agreement successful for user: ${agreeResponse.result.userId}');
+          for (final a in agreements) {
+            await _saveCachedTermState(a.termId, a.agreed);
+          }
           return true;
         } else {
           debugPrint('[TermAPI] API returned isSuccess=false: ${agreeResponse.message}');
+          for (final a in agreements) {
+            await _saveCachedTermState(a.termId, a.agreed);
+            if (a.termId >= 1 && a.termId <= 3) {
+              await _saveDummyTermState(a.termId, a.agreed);
+            }
+          }
           return false;
         }
       } else {
         debugPrint('[TermAPI] Failed: ${response.statusCode}');
+        for (final a in agreements) {
+          await _saveCachedTermState(a.termId, a.agreed);
+        }
         return false;
       }
     } catch (e, stackTrace) {
@@ -225,6 +227,12 @@ class TermApiService {
         }
       }
       
+      for (final a in agreements) {
+        await _saveCachedTermState(a.termId, a.agreed);
+        if (a.termId >= 1 && a.termId <= 3) {
+          await _saveDummyTermState(a.termId, a.agreed);
+        }
+      }
       return false;
     }
   }
@@ -233,15 +241,12 @@ class TermApiService {
   static Future<bool> hasAgreedToRequiredTerms() async {
     try {
       final terms = await fetchTerms();
-      
       // 필수 약관만 필터링
       final requiredTerms = terms.where((t) => t.isRequired).toList();
-      
       if (requiredTerms.isEmpty) {
         debugPrint('[TermAPI] ⚠️ No required terms found');
-        return false;
+        return true;
       }
-      
       // 모든 필수 약관에 동의했는지 확인
       final allAgreed = requiredTerms.every((t) => t.agreed);
       
@@ -251,6 +256,30 @@ class TermApiService {
       debugPrint('[TermAPI][ERROR] hasAgreedToRequiredTerms failed: $e');
       return false;
     }
+  }
+
+  // ===== Local cache for last-known term states =====
+  static Future<void> _saveCachedTermState(int termId, bool agreed) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('$_cacheKeyPrefix$termId', agreed);
+  }
+
+  static Future<List<Term>> _loadCachedTerms() async {
+    final prefs = await SharedPreferences.getInstance();
+    final List<Term> cached = [];
+    for (final id in [1, 2, 3]) {
+      final v = prefs.getBool('$_cacheKeyPrefix$id');
+      if (v != null) {
+        cached.add(Term(
+          termId: id,
+          title: id == 1 ? '이용약관' : id == 2 ? '개인정보처리방침' : '마케팅 정보 수신 동의',
+          content: '',
+          agreed: v,
+          contentUrl: null,
+        ));
+      }
+    }
+    return cached;
   }
 }
 

@@ -3,6 +3,7 @@ import '../data/tip_api_service.dart';
 import '../data/models/tip_models.dart';
 import '../../bookmark/data/bookmark_api_service.dart';
 import '../../user/data/user_api_service.dart';
+import '../utils/tip_image_resolver.dart';
 import 'package:intl/intl.dart';
 
 class TipDetailScreen extends StatefulWidget {
@@ -168,19 +169,45 @@ class _TipDetailScreenState extends State<TipDetailScreen> {
                   ),
                 ],
                 flexibleSpace: FlexibleSpaceBar(
-                  background: tip.imageUrl.isNotEmpty
-                      ? Image.network(
-                          tip.imageUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
+                  background: () {
+                    final asset = TipImageResolver.assetForTitle(tip.title);
+                    if (asset != null) {
+                      return Image.asset(
+                        asset,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) {
+                          // 에셋 누락 시 네트워크로 폴백
+                          if (tip.imageUrl.isNotEmpty) {
+                            return Image.network(
+                              tip.imageUrl,
+                              fit: BoxFit.cover,
+                            );
+                          }
+                          return Container(
+                            color: Colors.teal[50],
+                            child: Icon(Icons.lightbulb, size: 80, color: Colors.teal[300]),
+                          );
+                        },
+                      );
+                    }
+                    if (tip.imageUrl.isNotEmpty) {
+                      return Image.network(
+                        tip.imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, err, ___) {
+                          debugPrint('[TipIMG][DETAIL] load failed: ${tip.imageUrl} error=$err');
+                          return Container(
                             color: Colors.grey[200],
                             child: const Icon(Icons.image_not_supported, size: 64),
-                          ),
-                        )
-                      : Container(
-                          color: Colors.teal[50],
-                          child: Icon(Icons.lightbulb, size: 80, color: Colors.teal[300]),
-                        ),
+                          );
+                        },
+                      );
+                    }
+                    return Container(
+                      color: Colors.teal[50],
+                      child: Icon(Icons.lightbulb, size: 80, color: Colors.teal[300]),
+                    );
+                  }(),
                 ),
               ),
 

@@ -238,16 +238,22 @@ class _BarChartPainter extends CustomPainter {
       textPainter.paint(canvas, Offset(-30, y - textPainter.height / 2));
     }
 
-    // 막대 그래프 그리기
-    final double barWidth = (size.width - 60) / 2; // 두 막대 + 간격
-    final double barSpacing = 20;
-    
+    // 막대 그래프 그리기 (얇게 조정)
+    const double leftMargin = 10;
+    const double rightMargin = 10;
+    final double chartWidth = size.width - leftMargin - rightMargin;
+    final double barWidth = 100; // 얇은 막대
+
+    // 두 막대의 중심 위치 (좌우 1/3, 2/3 지점)
+    final double center1 = leftMargin + chartWidth * 0.28;
+    final double center2 = leftMargin + chartWidth * 0.80;
+
     // 지난달 막대
     final double previousHeight = (previous / max * (size.height - 40)).clamp(2, size.height - 40);
     barPaint.color = previousColor;
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(10, size.height - previousHeight - 20, barWidth, previousHeight),
+        Rect.fromLTWH(center1 - barWidth / 2, size.height - previousHeight - 20, barWidth, previousHeight),
         const Radius.circular(8),
       ),
       barPaint,
@@ -258,7 +264,7 @@ class _BarChartPainter extends CustomPainter {
     barPaint.color = currentColor;
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(barWidth + barSpacing + 10, size.height - currentHeight - 20, barWidth, currentHeight),
+        Rect.fromLTWH(center2 - barWidth / 2, size.height - currentHeight - 20, barWidth, currentHeight),
         const Radius.circular(8),
       ),
       barPaint,
@@ -273,7 +279,7 @@ class _BarChartPainter extends CustomPainter {
       textDirection: TextDirection.ltr,
     );
     labelPainter1.layout();
-    labelPainter1.paint(canvas, Offset(10 + barWidth / 2 - labelPainter1.width / 2, size.height - 15));
+    labelPainter1.paint(canvas, Offset(center1 - labelPainter1.width / 2, size.height - 15));
 
     final labelPainter2 = TextPainter(
       text: const TextSpan(
@@ -283,7 +289,7 @@ class _BarChartPainter extends CustomPainter {
       textDirection: TextDirection.ltr,
     );
     labelPainter2.layout();
-    labelPainter2.paint(canvas, Offset(barWidth + barSpacing + 10 + barWidth / 2 - labelPainter2.width / 2, size.height - 15));
+    labelPainter2.paint(canvas, Offset(center2 - labelPainter2.width / 2, size.height - 15));
   }
 
   @override
