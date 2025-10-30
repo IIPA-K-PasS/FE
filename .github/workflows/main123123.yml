@@ -1,0 +1,85 @@
+네, 클로드(Claude)가 제안한 내용이 **아주 정확하고 좋은 해결책**입니다\! 👏
+
+하얀 화면이 뜨는 문제는 클로드의 분석대로, GitHub Actions가 `.env` 파일을 웹 빌드에 포함시키지 못해서 발생하는 **환경 변수 문제**가 맞습니다.
+
+클로드가 제안한 `--dart-define` 방식은 CI/CD에서 환경 변수를 주입하는 **가장 표준적이고 안정적인 방법**입니다.
+
+### **그런데... (중요\! ⚠️)**
+
+클로드가 제안한 `.yaml` 파일은 이전에 발생했던 **Wasm 호환성 오류**(`flutter_secure_storage_web` 관련)를 해결하기 위한 `--web-renderer=html` 옵션을 빠뜨렸습니다.
+
+가장 완벽한 방법은 **두 가지 해결책을 모두 합치는 것**입니다.
+
+1.  **환경 변수 문제 해결**: `echo` 대신 `--dart-define` 사용 (클로드 제안)
+2.  **Wasm 호환성 문제 해결**: `--web-renderer=html` 사용 (우리 해결책)
+
+제가 두 가지를 모두 반영하여 Canvas의 `deploy-web.yml` 파일을 수정해 드릴게요.
+
+### 1단계: `.yaml` 파일 수정
+
+http://googleusercontent.com/immersive_entry_chip/0
+
+### 2단계: Dart 코드 수정 (필수\!)
+
+`--dart-define`을 사용하려면, 클로드의 설명대로 **Dart 코드에서 환경 변수를 불러오는 방식**을 `dotenv.env`에서 `String.fromEnvironment`로 **반드시** 변경해야 합니다.
+
+`ApiConfig.dart`, `main.dart`, `NaverMapApiService.dart`, `WeatherApiService.dart` 등 `.env`를 사용하는 모든 파일을 수정해야 합니다.
+
+**예시 1: `ApiConfig.dart`**
+
+````dart
+// Before:
+// import 'package:flutter_dotenv/flutter_dotenv.dart';
+// static String get baseUrl {
+//   final value = dotenv.env['API_BASE_URL'];
+//   ...
+// }
+
+// After:
+class ApiConfig {
+  static String get baseUrl {
+    // --dart-define으로 주입된 값을 컴파일 타임에 읽어옵니다.
+    const value = String.fromEnvironment('API_BASE_URL');
+    if (value.isEmpty) {
+      throw StateError('Missing API_BASE_URL (was not passed with --dart-define)');
+    }
+    return value;
+  }
+  // ...
+}
+
+**예시 2: `main.dart` (카카오 키)**
+```dart
+// Before:
+// await dotenv.load(fileName: '.env');
+// final kakaoNativeAppKey = dotenv.env['KAKAO_NATIVE_APP_KEY'];
+
+// After:
+Future<void> main() async {
+  // .env 파일 로드 관련 코드가 더 이상 필요 없습니다.
+  
+  // --dart-define으로 주입된 값을 읽어옵니다.
+  const kakaoNativeAppKey = String.fromEnvironment('KAKAO_NATIVE_APP_KEY');
+  if (kakaoNativeAppKey.isEmpty) {
+    throw Exception('KAKAO_NATIVE_APP_KEY is not set (was not passed with --dart-define)');
+  }
+  
+  KakaoSdk.init(nativeAppKey: kakaoNativeAppKey);
+  runApp(const MyApp());
+}
+
+**예시 3: `NaverMapApiService.dart` (네이버 키)**
+```dart
+// Before:
+// final String? _clientId = dotenv.env['NAVER_CLIENT_ID'];
+
+// After:
+class NaverMapApiService {
+  // const String.fromEnvironment로 읽어옵니다.
+  final String? _clientId = const String.fromEnvironment('NAVER_CLIENT_ID');
+  final String? _clientSecret = const String.fromEnvironment('NAVER_CLIENT_SECRET');
+  // ...
+}
+
+이렇게 **1) `.yaml` 파일 수정**과 **2) Dart 코드 수정**을 모두 완료하고 푸시하면, GitHub Secrets가 올바르게 주입되어 하얀 화면 문제가 해결될 것입니다!
+````
