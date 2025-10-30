@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:marquee/marquee.dart';
 import '../../data/weather_api_service.dart';
 
 class AISavingForecastCard extends StatelessWidget {
@@ -41,7 +42,7 @@ class AISavingForecastCard extends StatelessWidget {
   // 로딩 상태일 때 보여줄 위젯
   Widget _buildLoadingState() {
     return const SizedBox(
-      height: 150, // 전체 카드 높이와 비슷하게 유지
+      height: 150,
       child: Center(
         child: CircularProgressIndicator(),
       ),
@@ -53,7 +54,6 @@ class AISavingForecastCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 제목은 항상 표시
         Text(
           '오늘의 AI 절약 예보',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -61,7 +61,6 @@ class AISavingForecastCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        // 동네 설정을 유도하는 안내 메시지
         Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 24.0),
@@ -88,10 +87,18 @@ class AISavingForecastCard extends StatelessWidget {
         ? 'https://openweathermap.org/img/wn/${weatherData!.icon}@2x.png'
         : null;
 
+    final weatherText = weatherData != null
+        ? '${weatherData!.temp.toStringAsFixed(0)}°C ${weatherData!.description}'
+        : '날씨 정보 로딩 중...';
+
+    // 날씨 텍스트 스타일 정의
+    final weatherTextStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 1. 제목
         Text(
           '오늘의 AI 절약 예보',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -99,8 +106,6 @@ class AISavingForecastCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-
-        // 2. 위치 및 날씨 정보 Row
         Row(
           children: [
             Icon(
@@ -109,37 +114,71 @@ class AISavingForecastCard extends StatelessWidget {
               size: 20,
             ),
             const SizedBox(width: 8),
-            // 위치 이름 동적 표시
-            Text(
-              locationName,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+            Flexible(
+              child: Text(
+                locationName,
+                style: weatherTextStyle,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            const Spacer(),
-            // 온도 및 날씨 설명 동적 표시
-            if (weatherData != null)
-              Text(
-                '${weatherData!.temp.toStringAsFixed(0)}°C ${weatherData!.description}',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  // ⭐ 변경점: 날씨 텍스트 부분을 LayoutBuilder로 감싸서 너비 측정
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        // TextPainter를 사용하여 텍스트 너비 계산
+                        final span = TextSpan(text: weatherText, style: weatherTextStyle);
+                        final tp = TextPainter(text: span, textDirection: TextDirection.ltr);
+                        tp.layout();
+
+                        // 사용 가능한 너비(constraints.maxWidth)보다 텍스트 너비(tp.width)가 크면 Marquee 사용
+                        if (tp.width > constraints.maxWidth) {
+                          return SizedBox(
+                            height: 24, // Marquee 높이 지정
+                            child: Marquee(
+                              text: weatherText,
+                              style: weatherTextStyle,
+                              scrollAxis: Axis.horizontal,
+                              blankSpace: 20.0,
+                              velocity: 50.0,
+                              pauseAfterRound: const Duration(seconds: 1),
+                              showFadingOnlyWhenScrolling: true,
+                              fadingEdgeStartFraction: 0.1,
+                              fadingEdgeEndFraction: 0.1,
+                              startPadding: 10.0,
+                              // numberOfRounds: null, // 무한 반복 (기본값)
+                              // accelerationDuration 및 decelerationDuration은 기본값 사용 가능
+                            ),
+                          );
+                        } else {
+                          // 너비가 충분하면 일반 Text 위젯 사용 (오른쪽 정렬)
+                          return Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(weatherText, style: weatherTextStyle),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  if (iconUrl != null)
+                    Image.network(iconUrl, width: 24, height: 24, errorBuilder: (context, error, stackTrace) => Icon(Icons.error_outline, color: Colors.grey[400], size: 20))
+                  else
+                    Icon(
+                      Icons.cloud_off,
+                      color: Colors.grey[400],
+                      size: 20,
+                    ),
+                ],
               ),
-            const SizedBox(width: 8),
-            // 날씨 아이콘 동적 표시
-            if (iconUrl != null)
-              Image.network(iconUrl, width: 24, height: 24)
-            else
-              Icon(
-                Icons.cloud_off,
-                color: Colors.grey[400],
-                size: 20,
-              ),
+            ),
           ],
         ),
         const SizedBox(height: 16),
-
-        // 3. 절약 팁 박스
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(16),
@@ -164,7 +203,6 @@ class AISavingForecastCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              // AI 팁 텍스트 (하드코딩)
               Expanded(
                 child: Text(
                   '맑은 날씨가 계속돼요. 건조기 대신 햇볕에 빨래를 널러 전기 요금을 아껴보세요!',
