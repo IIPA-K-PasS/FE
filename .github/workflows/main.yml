@@ -1,29 +1,24 @@
 name: Deploy Flutter Web to GitHub Pages
-
 on:
   push:
-    branches: [ "develop" ] # develop 브랜치에 푸시될 때 실행
-
+    branches: [ "develop" ]
+    
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     
-    # gh-pages 브랜치에 쓰기 권한 부여
     permissions:
       contents: write 
     
     steps:
-      # 1. 레포지토리 코드 가져오기
       - name: 📦 Checkout Repository
         uses: actions/checkout@v4
       
-      # 2. Flutter 환경 설정
       - name: ☕ Set up Flutter SDK
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-
-      # 3. .env 파일 생성
+          
       - name: ✍️ Create .env file
         run: |
           echo "API_BASE_URL=${{ secrets.API_BASE_URL }}" >> .env
@@ -32,25 +27,20 @@ jobs:
           echo "NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}" >> .env
           echo "OPENWEATHERMAP_API_KEY=${{ secrets.OPENWEATHERMAP_API_KEY }}" >> .env
           echo ".env 파일 생성 완료:"
-          cat .env # 생성된 파일 내용 확인 (키 값 자체는 마스킹 처리됨)
-
-      # 4. Flutter 웹 설정 및 파일 생성
+          cat .env
+          
       - name: 🌐 Configure Flutter for Web
         run: flutter create . --platforms web
-
-      # 5. 프로젝트 의존성 설치
+        
       - name: 🧩 Get Dependencies
         run: flutter pub get
-
-      # 6. Flutter 웹 앱 빌드 (⭐ 수정됨)
-      # --web-renderer=html (등호 사용)로 Wasm 호환성 오류를 해결합니다.
+        
+      # ⭐ --web-renderer 옵션 제거
       - name: 🏗️ Build Web App
-        run: flutter build web --release --web-renderer=html --base-href "/FE/"
-
-      # 7. 빌드 결과물을 GitHub Pages에 배포
+        run: flutter build web --release --base-href "/FE/"
+        
       - name: 🚀 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build/web
-
