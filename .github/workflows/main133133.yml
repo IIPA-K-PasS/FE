@@ -1,0 +1,61 @@
+# .github/workflows/deploy-flutter-web.yml
+
+name: Deploy Flutter Web to GitHub Pages
+
+on:
+  push:
+    branches: [ "feature/test-1" ] # feature/test-1 브랜치에 푸시될 때만 실행
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write  
+    
+    steps:
+      # 1. 레포지토리 코드 가져오기
+      - name: 📦 Checkout Repository
+        uses: actions/checkout@v4
+      
+      # 2. Flutter 환경 설정 (버전 고정)
+      - name: ☕ Set up Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.22.3' # 또는 최신 안정 버전
+
+      # 3. .env 파일 생성 (로컬 개발 대응, 실제 빌드엔 중요도 낮음)
+      - name: ✍️ Create .env file (Optional)
+        run: |
+          echo "API_BASE_URL=${{ secrets.API_BASE_URL }}" >> .env
+          echo "KAKAO_NATIVE_APP_KEY=${{ secrets.KAKAO_NATIVE_APP_KEY }}" >> .env
+          echo "NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}" >> .env
+          echo "NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}" >> .env
+          echo "OPENWEATHERMAP_API_KEY=${{ secrets.OPENWEATHERMAP_API_KEY }}" >> .env
+          cat .env
+
+      # 4. Flutter 웹 활성화
+      - name: 🌐 Enable Web
+        run: flutter config --enable-web
+
+      # 5. 프로젝트 의존성 설치
+      - name: 🧩 Get Dependencies
+        run: flutter pub get
+
+      # 6. Flutter 웹 앱 빌드 (⭐ dart-define 옵션 필수!)
+      - name: 🏗️ Build Web App
+        run: |
+          flutter build web --release --web-renderer html --base-href "/FE/" \
+            --dart-define API_BASE_URL=${{ secrets.API_BASE_URL }} \
+            --dart-define KAKAO_NATIVE_APP_KEY=${{ secrets.KAKAO_NATIVE_APP_KEY }} \
+            --dart-define NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }} \
+            --dart-define NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }} \
+            --dart-define OPENWEATHERMAP_API_KEY=${{ secrets.OPENWEATHERMAP_API_KEY }}
+
+      # 7. 빌드 결과물을 GitHub Pages에 배포
+      - name: 🚀 Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web
