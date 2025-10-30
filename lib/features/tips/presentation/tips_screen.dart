@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../data/tip_api_service.dart';
 import '../data/models/tip_models.dart';
 import 'tip_detail_screen.dart';
+import '../utils/tip_image_resolver.dart';
 
 class TipsScreen extends StatefulWidget {
   const TipsScreen({super.key});
@@ -282,31 +283,63 @@ class _TipCardAPI extends StatelessWidget {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      // 이미지 표시 (서버 데이터)
+                      // 이미지 표시 (에셋 우선 -> 서버 데이터)
                       ClipRRect(
                         borderRadius: BorderRadius.circular(10),
-                        child: tip.imageUrl.isNotEmpty
-                            ? Image.network(
-                                tip.imageUrl,
-                                width: 60,
-                                height: 60,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Container(
+                        child: () {
+                          final asset = TipImageResolver.assetForTitle(tip.title);
+                          if (asset != null) {
+                            return Image.asset(
+                              asset,
+                              width: 60,
+                              height: 60,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) {
+                                // 에셋 누락 시 네트워크로 폴백
+                                if (tip.imageUrl.isNotEmpty) {
+                                  return Image.network(
+                                    tip.imageUrl,
+                                    width: 60,
+                                    height: 60,
+                                    fit: BoxFit.cover,
+                                  );
+                                }
+                                return Container(
                                   width: 60,
                                   height: 60,
                                   color: Colors.grey[200],
                                   child: Icon(Icons.image_not_supported, color: Colors.grey),
-                                ),
-                              )
-                            : Container(
-                                width: 60,
-                                height: 60,
-                                decoration: BoxDecoration(
-                                  color: Colors.teal[100],
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Icon(Icons.lightbulb, color: Colors.teal[600]),
-                              ),
+                                );
+                              },
+                            );
+                          }
+                          if (tip.imageUrl.isNotEmpty) {
+                            return Image.network(
+                              tip.imageUrl,
+                              width: 60,
+                              height: 60,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, err, ___) {
+                                debugPrint('[TipIMG][LIST] load failed: ${tip.imageUrl} error=$err');
+                                return Container(
+                                  width: 60,
+                                  height: 60,
+                                  color: Colors.grey[200],
+                                  child: Icon(Icons.image_not_supported, color: Colors.grey),
+                                );
+                              },
+                            );
+                          }
+                          return Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: Colors.teal[100],
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(Icons.lightbulb, color: Colors.teal[600]),
+                          );
+                        }(),
                       ),
                       const SizedBox(width: 12),
                       Expanded(

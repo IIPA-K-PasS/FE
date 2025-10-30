@@ -29,6 +29,9 @@ class TipApiService {
       debugPrint('[TipAPI] ✅ Successfully fetched ${data.result.length} tips');
       if (data.result.isNotEmpty) {
         debugPrint('[TipAPI] First tip: ${data.result[0].title}');
+        for (final t in data.result.take(5)) {
+          debugPrint('[TipAPI] item id=${t.id}, title=${t.title}, imageUrl=${t.imageUrl}');
+        }
       }
       return data.result;
     } catch (e, stackTrace) {

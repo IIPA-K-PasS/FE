@@ -1,3 +1,5 @@
+import 'package:billow/config/api_config.dart';
+
 class TipListResponse {
   final bool isSuccess;
   final String code;
@@ -38,10 +40,12 @@ class TipItem {
   });
 
   factory TipItem.fromJson(Map<String, dynamic> json) {
+    final int id = json['id'] ?? 0;
+    final String rawUrl = json['imageUrl'] ?? json['image_url'] ?? json['thumbnailUrl'] ?? json['thumbnail_url'] ?? '';
     return TipItem(
-      id: json['id'] ?? 0,
+      id: id,
       title: json['title'] ?? '',
-      imageUrl: json['imageUrl'] ?? json['image_url'] ?? json['thumbnailUrl'] ?? json['thumbnail_url'] ?? '',
+      imageUrl: _normalizeImageUrl(rawUrl, seed: 'list_$id'),
       hashtags: (json['hashtags'] as List<dynamic>?)
               ?.map((tag) => tag.toString())
               .toList() ??
@@ -91,11 +95,13 @@ class TipDetail {
   });
 
   factory TipDetail.fromJson(Map<String, dynamic> json) {
+    final int id = json['id'] ?? 0;
+    final String rawUrl = json['imageUrl'] ?? json['image_url'] ?? json['thumbnailUrl'] ?? json['thumbnail_url'] ?? '';
     return TipDetail(
-      id: json['id'] ?? 0,
+      id: id,
       title: json['title'] ?? '',
       content: json['content'] ?? '',
-      imageUrl: json['imageUrl'] ?? json['image_url'] ?? json['thumbnailUrl'] ?? json['thumbnail_url'] ?? '',
+      imageUrl: _normalizeImageUrl(rawUrl, seed: 'detail_$id'),
       hashtags: (json['hashtags'] as List<dynamic>?)
               ?.map((tag) => tag.toString())
               .toList() ??
@@ -106,4 +112,25 @@ class TipDetail {
     );
   }
 }
+
+// 이미지 URL 정규화: 상대경로 보정 + 특정 호스트 실패 시 대체 URL
+String _normalizeImageUrl(String? url, {String? seed}) {
+  String u = (url ?? '').trim();
+  if (u.isEmpty) return u;
+
+  // 상대경로면 Base URL prefix
+  if (u.startsWith('/')) {
+    u = '${ApiConfig.baseUrl}$u';
+  }
+
+  // 개발 환경에서 via.placeholder.com DNS 실패 시 대체
+  if (u.contains('via.placeholder.com')) {
+    final String s = (seed ?? 'img');
+    // 고정 크기(400x250)로 대체, 시드로 항목별 고유 이미지 유지
+    return 'https://picsum.photos/seed/$s/400/250';
+  }
+
+  return u;
+}
+
 

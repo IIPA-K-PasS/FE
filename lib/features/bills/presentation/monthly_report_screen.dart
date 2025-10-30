@@ -242,11 +242,11 @@ class _BarChartPainter extends CustomPainter {
     const double leftMargin = 10;
     const double rightMargin = 10;
     final double chartWidth = size.width - leftMargin - rightMargin;
-    final double barWidth = 24; // 얇은 막대
+    final double barWidth = 100; // 얇은 막대
 
     // 두 막대의 중심 위치 (좌우 1/3, 2/3 지점)
-    final double center1 = leftMargin + chartWidth * 0.33;
-    final double center2 = leftMargin + chartWidth * 0.67;
+    final double center1 = leftMargin + chartWidth * 0.28;
+    final double center2 = leftMargin + chartWidth * 0.80;
 
     // 지난달 막대
     final double previousHeight = (previous / max * (size.height - 40)).clamp(2, size.height - 40);
