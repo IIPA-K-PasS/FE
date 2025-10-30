@@ -24,12 +24,13 @@ class _SplashScreenState extends State<SplashScreen> {
 
   _navigateToLogin() async {
     await Future.delayed(const Duration(milliseconds: 1200));
-    
     if (!mounted) return;
 
-    // 온보딩 완료 여부 확인
-    final prefs = await SharedPreferences.getInstance();
-    final done = prefs.getBool('onboarding_completed') ?? false;
+    // --- 온보딩 실험용 (매번 무조건 노출) ---
+    final done = false; // 항상 온보딩 보이기 (영상/테스트용)
+    // 원래 로직 (아래 주석 해제하면 정상화)
+    // final prefs = await SharedPreferences.getInstance();
+    // final done = prefs.getBool('onboarding_completed') ?? false;
     if (!done) {
       Navigator.pushReplacement(
         context,
@@ -37,65 +38,8 @@ class _SplashScreenState extends State<SplashScreen> {
       );
       return;
     }
-
     // 항상 로그인 화면으로 이동 (자동 로그인 로직은 하단 주석 참고)
     Navigator.pushReplacement(context, FadeRoute(page: const LoginScreen()));
-
-    /* 자동 로그인 로직 (테스트 후 활성화)
-    // 카카오 SDK 세션 자동 로그인 시도
-    bool autoLoginSuccess = false;
-    
-    try {
-      // 1. 카카오 SDK에 유효한 토큰이 있는지 확인
-      if (await AuthApi.instance.hasToken()) {
-        try {
-          // 2. 토큰 유효성 검사
-          AccessTokenInfo tokenInfo = await UserApi.instance.accessTokenInfo();
-          debugPrint('✅ 카카오 토큰 유효 (만료: ${tokenInfo.expiresIn}초 남음)');
-          
-          // 3. 카카오 사용자 정보 가져오기
-          User kakaoUser = await UserApi.instance.me();
-          
-          // 4. idToken이 있으면 서버 로그인 시도
-          final token = await TokenManagerProvider.instance.manager.getToken();
-          if (token?.idToken != null) {
-            debugPrint('🔑 idToken으로 서버 로그인 시도');
-            final serverLoginSuccess = await AuthService.loginWithKakaoIdToken(token!.idToken!);
-            
-            if (serverLoginSuccess) {
-              debugPrint('🎉 자동 로그인 성공 - 메인 화면으로 이동');
-              autoLoginSuccess = true;
-            } else {
-              debugPrint('⚠️ 서버 로그인 실패 - 로그인 화면으로 이동');
-            }
-          } else {
-            debugPrint('⚠️ idToken이 없음 - 재로그인 필요');
-          }
-        } catch (e) {
-          debugPrint('❌ 카카오 토큰 검증 실패: $e');
-          // 토큰이 만료되었거나 유효하지 않음
-        }
-      }
-    } catch (e) {
-      debugPrint('❌ 자동 로그인 에러: $e');
-    }
-
-    if (!mounted) return;
-
-    if (autoLoginSuccess) {
-      // 자동 로그인 성공 → 메인 화면으로
-      Navigator.pushReplacement(
-        context,
-        FadeRoute(page: const MainNavigationPage()),
-      );
-    } else {
-      // 자동 로그인 실패 → 로그인 화면으로
-      Navigator.pushReplacement(
-        context,
-        FadeRoute(page: const LoginScreen()),
-      );
-    }
-    */
   }
 
   @override

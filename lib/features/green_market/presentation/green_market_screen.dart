@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class GreenMarketScreen extends StatefulWidget {
   const GreenMarketScreen({super.key});
@@ -10,8 +11,24 @@ class GreenMarketScreen extends StatefulWidget {
 
 class _GreenMarketScreenState extends State<GreenMarketScreen> {
   final TextEditingController _pointController = TextEditingController();
-  int _availablePoints = 1250; // 사용 가능한 포인트
+  int _availablePoints = 12500; // 서버 연동 값
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOverride();
+  }
+
+  Future<void> _loadOverride() async {
+    // 앱 재시작 하면 override 안씀
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.containsKey('green_point_override')) {
+      setState(() {
+        _availablePoints = prefs.getInt('green_point_override') ?? _availablePoints;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -35,12 +52,8 @@ class _GreenMarketScreenState extends State<GreenMarketScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 사용 가능한 포인트 카드
             _buildPointsCard(),
-            
             const SizedBox(height: 30),
-            
-            // 포인트 교환 섹션
             _buildExchangeSection(),
           ],
         ),
@@ -69,17 +82,31 @@ class _GreenMarketScreenState extends State<GreenMarketScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            '${_formatPoints(_availablePoints)} P',
-            style: TextStyle(
-              fontSize: 28,
-              color: Colors.green[800],
-              fontWeight: FontWeight.bold,
-            ),
+          FutureBuilder<int?>(
+            future: _getOverridePoint(),
+            builder: (context, snapshot) {
+              final showPoint = snapshot.data ?? _availablePoints;
+              return Text(
+                '${_formatPoints(showPoint)} P',
+                style: TextStyle(
+                  fontSize: 28,
+                  color: Colors.green[800],
+                  fontWeight: FontWeight.bold,
+                ),
+              );
+            },
           ),
         ],
       ),
     );
+  }
+
+  Future<int?> _getOverridePoint() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.containsKey('green_point_override')) {
+      return prefs.getInt('green_point_override');
+    }
+    return null;
   }
 
   Widget _buildExchangeSection() {
@@ -94,10 +121,7 @@ class _GreenMarketScreenState extends State<GreenMarketScreen> {
             color: Colors.black87,
           ),
         ),
-        
         const SizedBox(height: 20),
-        
-        // 지역화폐로 교환 섹션
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -116,9 +140,7 @@ class _GreenMarketScreenState extends State<GreenMarketScreen> {
                   color: Colors.black87,
                 ),
               ),
-              
               const SizedBox(height: 8),
-              
               Text(
                 '1P = 1원으로 교환돼요 (최소 1,000P)',
                 style: TextStyle(
@@ -126,9 +148,7 @@ class _GreenMarketScreenState extends State<GreenMarketScreen> {
                   color: Colors.grey[600],
                 ),
               ),
-              
               const SizedBox(height: 16),
-              
               const Text(
                 '교환할 포인트',
                 style: TextStyle(
@@ -137,10 +157,7 @@ class _GreenMarketScreenState extends State<GreenMarketScreen> {
                   color: Colors.black87,
                 ),
               ),
-              
               const SizedBox(height: 8),
-              
-              // 포인트 입력 필드
               TextField(
                 controller: _pointController,
                 keyboardType: TextInputType.number,
@@ -161,15 +178,11 @@ class _GreenMarketScreenState extends State<GreenMarketScreen> {
                     borderSide: BorderSide(color: Colors.green[400]!),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 12,
+                    horizontal: 12, vertical: 12,
                   ),
                 ),
               ),
-              
               const SizedBox(height: 16),
-              
-              // 교환 신청 버튼
               SizedBox(
                 width: double.infinity,
                 height: 48,
@@ -187,16 +200,12 @@ class _GreenMarketScreenState extends State<GreenMarketScreen> {
                       ? const SizedBox(
                           width: 20,
                           height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                         )
                       : const Text(
                           '교환 신청하기',
                           style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 16, fontWeight: FontWeight.w600,
                           ),
                         ),
                 ),
@@ -208,7 +217,6 @@ class _GreenMarketScreenState extends State<GreenMarketScreen> {
     );
   }
 
-
   String _formatPoints(int points) {
     return points.toString().replaceAllMapped(
       RegExp(r'\B(?=(\d{3})+(?!\d))'),
@@ -218,45 +226,35 @@ class _GreenMarketScreenState extends State<GreenMarketScreen> {
 
   void _handleExchange() async {
     final inputText = _pointController.text.trim();
-    
     if (inputText.isEmpty) {
       _showSnackBar('교환할 포인트를 입력해주세요.', Colors.orange);
       return;
     }
-
     final exchangePoints = int.tryParse(inputText);
     if (exchangePoints == null) {
       _showSnackBar('올바른 포인트를 입력해주세요.', Colors.red);
       return;
     }
-
     if (exchangePoints < 1000) {
       _showSnackBar('최소 1,000P 이상 교환 가능합니다.', Colors.orange);
       return;
     }
-
     if (exchangePoints > _availablePoints) {
       _showSnackBar('보유 포인트가 부족합니다.', Colors.red);
       return;
     }
-
     setState(() {
       _isLoading = true;
     });
-
-    // 교환 처리 시뮬레이션
     await Future.delayed(const Duration(seconds: 2));
-
     setState(() {
       _isLoading = false;
       _availablePoints -= exchangePoints;
       _pointController.clear();
     });
-
-    _showSnackBar(
-      '${_formatPoints(exchangePoints)}P가 지역화폐로 교환 신청되었습니다!',
-      Colors.green,
-    );
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('green_point_override', _availablePoints);
+    _showSnackBar('${_formatPoints(exchangePoints)}P가 지역화폐로 교환 신청되었습니다!', Colors.green);
   }
 
   void _showSnackBar(String message, Color color) {
