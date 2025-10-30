@@ -5,6 +5,8 @@ import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
 import '../../../services/auth_service.dart';
 import 'login_screen.dart';
 import '../../../main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -25,12 +27,19 @@ class _SplashScreenState extends State<SplashScreen> {
     
     if (!mounted) return;
 
-    // TODO: 로그인 테스트를 위해 자동 로그인 임시 비활성화
-    // 항상 로그인 화면으로 이동
-    Navigator.pushReplacement(
-      context,
-      FadeRoute(page: const LoginScreen()),
-    );
+    // 온보딩 완료 여부 확인
+    final prefs = await SharedPreferences.getInstance();
+    final done = prefs.getBool('onboarding_completed') ?? false;
+    if (!done) {
+      Navigator.pushReplacement(
+        context,
+        FadeRoute(page: const OnboardingScreen()),
+      );
+      return;
+    }
+
+    // 항상 로그인 화면으로 이동 (자동 로그인 로직은 하단 주석 참고)
+    Navigator.pushReplacement(context, FadeRoute(page: const LoginScreen()));
 
     /* 자동 로그인 로직 (테스트 후 활성화)
     // 카카오 SDK 세션 자동 로그인 시도
