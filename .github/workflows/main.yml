@@ -23,23 +23,23 @@ jobs:
         with:
           channel: 'stable'
 
-      # 3. 프로젝트 의존성 설치
-      # 🚨 수정: 'working-directory' 제거
-      # pubspec.yaml이 있는 저장소 루트에서 바로 실행합니다.
+      # ⭐ 3. (수정됨) Flutter 웹 설정 및 파일 생성
+      # 이 명령어가 'web' 폴더와 관련 설정 파일을 생성합니다.
+      - name: 🌐 Configure Flutter for Web
+        run: flutter create . --platforms web
+
+      # 4. 프로젝트 의존성 설치
       - name: 🧩 Get Dependencies
         run: flutter pub get
 
-      # 4. Flutter 웹 앱 빌드
-      # 🚨 수정: 'working-directory' 제거
-      # --base-href "/FE/"는 저장소 이름이 FE이므로 올바르게 설정하셨습니다.
+      # 5. Flutter 웹 앱 빌드
       - name: 🏗️ Build Web App
         run: flutter build web --release --base-href "/FE/"
 
-      # 5. 빌드 결과물을 GitHub Pages에 배포
+      # 6. 빌드 결과물을 GitHub Pages에 배포
       - name: 🚀 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          # 🚨 수정: 'billow' 경로 제거
-          # 빌드 결과물은 저장소 루트의 build/web 폴더에 생성됩니다.
           publish_dir: ./build/web
+
