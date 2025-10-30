@@ -2,42 +2,44 @@ name: Deploy Flutter Web to GitHub Pages
 
 on:
   push:
-    branches: [ "develop" ] # develop 브랜치에 푸시될 때 실행되도록 설정
+    branches: [ "develop" ] # develop 브랜치에 푸시될 때 실행
 
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     
-    # 🚨 해결책 1: GITHUB_TOKEN이 배포를 수행할 수 있도록 명시적 권한 추가
+    # gh-pages 브랜치에 쓰기 권한 부여
     permissions:
-      contents: write # 이 권한이 있어야 peaceiris/actions-gh-pages가 gh-pages 브랜치에 푸시할 수 있습니다.
+      contents: write 
     
     steps:
       # 1. 레포지토리 코드 가져오기
       - name: 📦 Checkout Repository
         uses: actions/checkout@v4
-        
-      # 2. Flutter 환경 설정 (필수)
+      
+      # 2. Flutter 환경 설정
       - name: ☕ Set up Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable' # 안정적인 채널 사용
+          channel: 'stable'
 
       # 3. 프로젝트 의존성 설치
+      # 🚨 수정: 'working-directory' 제거
+      # pubspec.yaml이 있는 저장소 루트에서 바로 실행합니다.
       - name: 🧩 Get Dependencies
-        # ⬇️ Flutter 프로젝트가 서브 디렉토리(my_flutter_app)에 있다면 경로 지정
         run: flutter pub get
-        working-directory: billow # ⬅️ 여기에 실제 Flutter 프로젝트 폴더 이름을 입력하세요!
 
+      # 4. Flutter 웹 앱 빌드
+      # 🚨 수정: 'working-directory' 제거
+      # --base-href "/FE/"는 저장소 이름이 FE이므로 올바르게 설정하셨습니다.
       - name: 🏗️ Build Web App
         run: flutter build web --release --base-href "/FE/"
-        working-directory: billow # ⬅️ 여기에 실제 Flutter 프로젝트 폴더 이름을 입력하세요!
 
       # 5. 빌드 결과물을 GitHub Pages에 배포
       - name: 🚀 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          # ⬇️ 배포 경로도 서브 디렉토리에 맞게 변경
-          publish_dir: ./billow/build/web # ⬅️ 프로젝트 폴더 이름을 포함하여 경로 수정
-          # publish_branch: gh-pages # 배포할 브랜치 (기본값)
+          # 🚨 수정: 'billow' 경로 제거
+          # 빌드 결과물은 저장소 루트의 build/web 폴더에 생성됩니다.
+          publish_dir: ./build/web
