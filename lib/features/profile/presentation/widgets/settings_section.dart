@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../services/auth_service.dart';
 import '../../../../services/kakao_service.dart';
 import '../../../terms/presentation/terms_management_screen.dart';
+import '../../../landing/presentation/login_screen.dart';
 
 class SettingsSection extends StatelessWidget {
   const SettingsSection({super.key});
@@ -222,11 +223,19 @@ class SettingsSection extends StatelessWidget {
               child: const Text('취소'),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.of(context).pop();
                 // SDK 세션 로그아웃 + 로컬 JWT 삭제
-                KakaoService.logoutSdk();
-                AuthService.logoutLocal();
+                await KakaoService.logoutSdk();
+                await AuthService.logoutLocal();
+
+                // 로그인 화면으로 이동 (네비게이션 스택 초기화)
+                if (context.mounted) {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                    (route) => false,
+                  );
+                }
               },
               child: Text(
                 '로그아웃',

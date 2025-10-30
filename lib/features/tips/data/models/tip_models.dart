@@ -41,7 +41,7 @@ class TipItem {
     return TipItem(
       id: json['id'] ?? 0,
       title: json['title'] ?? '',
-      imageUrl: json['imageUrl'] ?? '',
+      imageUrl: json['imageUrl'] ?? json['image_url'] ?? json['thumbnailUrl'] ?? json['thumbnail_url'] ?? '',
       hashtags: (json['hashtags'] as List<dynamic>?)
               ?.map((tag) => tag.toString())
               .toList() ??
@@ -95,7 +95,7 @@ class TipDetail {
       id: json['id'] ?? 0,
       title: json['title'] ?? '',
       content: json['content'] ?? '',
-      imageUrl: json['imageUrl'] ?? '',
+      imageUrl: json['imageUrl'] ?? json['image_url'] ?? json['thumbnailUrl'] ?? json['thumbnail_url'] ?? '',
       hashtags: (json['hashtags'] as List<dynamic>?)
               ?.map((tag) => tag.toString())
               .toList() ??
