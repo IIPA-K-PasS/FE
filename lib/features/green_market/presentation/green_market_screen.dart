@@ -11,7 +11,7 @@ class GreenMarketScreen extends StatefulWidget {
 
 class _GreenMarketScreenState extends State<GreenMarketScreen> {
   final TextEditingController _pointController = TextEditingController();
-  int _availablePoints = 12500; // 서버 연동 값
+  int _availablePoints = 12000; // 서버 연동 값
   bool _isLoading = false;
 
   @override
