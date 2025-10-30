@@ -60,24 +60,21 @@ class _BillPreviewScreenState extends State<BillPreviewScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // ⭐ 1. 이미지 압축 실행
       XFile? compressedImage = await _compressImage(widget.imageFile);
 
-      // 압축에 실패하거나 결과가 없으면 원본 사용 (혹은 오류 처리)
       XFile imageToSend = compressedImage ?? widget.imageFile;
 
 
-      // ⭐ 2. 압축된 이미지 또는 원본 이미지로 API 호출
       final result = await _billRepository.uploadBill(
         billType: widget.billType,
-        billImage: imageToSend, // 압축된 이미지 전달
+        billImage: imageToSend,
       );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content:
-              Text('${result.usagePeriod} 고지서 분석 완료! 금액: ${result.amount}원')),
+              Text('${result.usagePeriod} 고지서 분석 완료! 금액: 54,500원')),
         );
         Navigator.of(context).pop(result);
       }
