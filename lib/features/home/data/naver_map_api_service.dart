@@ -24,20 +24,30 @@ class Address {
 }
 
 class NaverMapApiService {
-  final String? _clientId = dotenv.env['NAVER_CLIENT_ID'];
-  final String? _clientSecret = dotenv.env['NAVER_CLIENT_SECRET'];
+  String? _id() {
+    String v = const String.fromEnvironment('NAVER_CLIENT_ID');
+    if (v.isEmpty) { try { v = dotenv.env['NAVER_CLIENT_ID'] ?? ''; } catch (_) {} }
+    return v.isEmpty ? null : v;
+  }
+  String? _secret() {
+    String v = const String.fromEnvironment('NAVER_CLIENT_SECRET');
+    if (v.isEmpty) { try { v = dotenv.env['NAVER_CLIENT_SECRET'] ?? ''; } catch (_) {} }
+    return v.isEmpty ? null : v;
+  }
 
   // Geocoding: 주소 검색
   Future<List<Address>> searchAddress(String query) async {
-    if (_clientId == null || _clientSecret == null) {
+    final id = _id();
+    final secret = _secret();
+    if (id == null || secret == null) {
       throw Exception("API keys are not configured in .env file");
     }
 
     final response = await http.get(
       Uri.parse('https://maps.apigw.ntruss.com/map-geocode/v2/geocode?query=$query'),
       headers: {
-        'X-NCP-APIGW-API-KEY-ID': _clientId,
-        'X-NCP-APIGW-API-KEY': _clientSecret,
+        'X-NCP-APIGW-API-KEY-ID': id,
+        'X-NCP-APIGW-API-KEY': secret,
       },
     );
 
@@ -54,15 +64,17 @@ class NaverMapApiService {
 
   // Reverse Geocoding: 좌표 -> 주소 변환
   Future<String> coordToAddress(double lat, double lon) async {
-    if (_clientId == null || _clientSecret == null) {
+    final id = _id();
+    final secret = _secret();
+    if (id == null || secret == null) {
       throw Exception("API keys are not configured in .env file");
     }
 
     final response = await http.get(
       Uri.parse('https://maps.apigw.ntruss.com/map-reversegeocode/v2/gc?coords=$lon,$lat&output=json'),
       headers: {
-        'X-NCP-APIGW-API-KEY-ID': _clientId,
-        'X-NCP-APIGW-API-KEY': _clientSecret,
+        'X-NCP-APIGW-API-KEY-ID': id,
+        'X-NCP-APIGW-API-KEY': secret,
       },
     );
 

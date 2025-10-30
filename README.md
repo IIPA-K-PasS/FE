@@ -105,3 +105,23 @@ BASE_URL=https://api.example.com
 ---
 
 **문의 및 피드백 환영! 좋은 평가 부탁드립니다.**
+
+---
+
+## 🚨 [중요] 로컬 환경 변수 전달 및 실행 방법
+
+앱 실행 또는 빌드 시, 환경 변수(KEY)들을 반드시 아래처럼 --dart-define 옵션으로 전달해야 합니다.
+예시 (필수 키 모두 입력):
+
+```sh
+flutter run \
+  --dart-define=KAKAO_NATIVE_APP_KEY=여기에_카카오_네이티브_키 \
+  --dart-define=API_BASE_URL=여기에_API_URL \
+  --dart-define=NAVER_CLIENT_ID=네이버_ID \
+  --dart-define=NAVER_CLIENT_SECRET=네이버_시크릿 \
+  --dart-define=OPENWEATHERMAP_API_KEY=오픈웨더MAP키
+```
+
+- Android Studio/VSCode는 해당 옵션을 Run/Edit Configurations에서 "Additional run args" 또는 Arguments 입력란에 추가할 것
+- 빌드(`flutter build apk`, `flutter build web` 등)도 마찬가지로 --dart-define 옵션 필수
+- ⚠️ 전달하지 않으면 앱 실행 시점에 즉시 "xxx is not set (pass via --dart-define)" 에러로 종료됩니다!
