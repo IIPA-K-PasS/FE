@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'green_market_button.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../user/data/user_api_service.dart';
 import '../../../user/data/models/user_models.dart';
 
@@ -33,7 +34,6 @@ class _ProfileInfoCardState extends State<ProfileInfoCard> {
 
   void _showNicknameEditDialog() {
     final controller = TextEditingController(text: _userInfo?.nickname ?? '');
-
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -61,31 +61,21 @@ class _ProfileInfoCardState extends State<ProfileInfoCard> {
                 );
                 return;
               }
-
               Navigator.pop(context);
-
-              // 로딩 다이얼로그
               showDialog(
                 context: context,
                 barrierDismissible: false,
-                builder: (context) => const Center(
-                  child: CircularProgressIndicator(),
-                ),
+                builder: (context) => const Center(child: CircularProgressIndicator()),
               );
-
               try {
                 final success = await UserApiService.updateNickname(newNickname);
-
                 if (!mounted) return;
-                
-                // 로딩 다이얼로그 닫기
                 Navigator.of(context, rootNavigator: true).pop();
-
                 if (success) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('닉네임이 변경되었습니다')),
                   );
-                  _loadUserInfo(); // 새로고침
+                  _loadUserInfo();
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('닉네임 변경에 실패했습니다')),
@@ -93,10 +83,7 @@ class _ProfileInfoCardState extends State<ProfileInfoCard> {
                 }
               } catch (e) {
                 if (!mounted) return;
-                
-                // 로딩 다이얼로그 닫기
                 Navigator.of(context, rootNavigator: true).pop();
-                
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('에러 발생: $e')),
                 );
@@ -107,6 +94,11 @@ class _ProfileInfoCardState extends State<ProfileInfoCard> {
         ],
       ),
     );
+  }
+
+  Future<int> _getPoint() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('green_point_override') ?? 12000;
   }
 
   @override
@@ -146,7 +138,6 @@ class _ProfileInfoCardState extends State<ProfileInfoCard> {
                     // 프로필 섹션
                     Row(
                       children: [
-                        // 프로필 이미지
                         Semantics(
                           label: '프로필 이미지',
                           child: CircleAvatar(
@@ -171,10 +162,7 @@ class _ProfileInfoCardState extends State<ProfileInfoCard> {
                                 : null,
                           ),
                         ),
-
                         const SizedBox(width: 16),
-
-                        // 사용자 정보
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -204,7 +192,6 @@ class _ProfileInfoCardState extends State<ProfileInfoCard> {
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                  // 프로필 수정 버튼
                                   Semantics(
                                     label: '프로필 수정 버튼',
                                     button: true,
@@ -246,7 +233,6 @@ class _ProfileInfoCardState extends State<ProfileInfoCard> {
                         ),
                       ],
                     ),
-
                     // 포인트 섹션
                     Container(
                       padding: const EdgeInsets.all(16),
@@ -256,26 +242,44 @@ class _ProfileInfoCardState extends State<ProfileInfoCard> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             '나의 그린 포인트',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(
-                                  color: Colors.teal[800],
-                                  fontWeight: FontWeight.w500,
-                                ),
+                            style: TextStyle(
+                              color: Color(0xFF00796B),
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                           const SizedBox(height: 8),
-                          Text(
-                            '${_userInfo!.point.toStringAsFixed(0)} P',
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineLarge
-                                ?.copyWith(
-                                  color: Colors.teal[600],
-                                  fontWeight: FontWeight.bold,
+                          Row(
+                            children: [
+                              Expanded(
+                                child: FutureBuilder<int>(
+                                  future: _getPoint(),
+                                  builder: (context, snapshot) {
+                                    final value = snapshot.data ?? 12000;
+                                    return Text(
+                                      '${value.toStringAsFixed(0)} P',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headlineLarge
+                                          ?.copyWith(
+                                            color: Colors.teal[600],
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    );
+                                  },
                                 ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.notifications_none, color: Colors.teal, size: 28),
+                                tooltip: '포인트 초기화(테스트)',
+                                onPressed: () async {
+                                  final prefs = await SharedPreferences.getInstance();
+                                  await prefs.remove('green_point_override');
+                                  setState(() {});
+                                },
+                              ),
+                            ],
                           ),
                         ],
                       ),

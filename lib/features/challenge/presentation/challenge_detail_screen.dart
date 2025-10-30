@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../domain/challenge_entity.dart';
 import 'challenge_proof_preview_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ChallengeDetailScreen extends StatelessWidget {
   final Challenge challenge;
@@ -22,6 +23,12 @@ class ChallengeDetailScreen extends StatelessWidget {
         );
 
         if (result == true && context.mounted) {
+          // 포인트 로컬에 누적 ====
+          final prefs = await SharedPreferences.getInstance();
+          int base = prefs.getInt('green_point_override') ?? 12000;
+          int newVal = base + (challenge.points);
+          await prefs.setInt('green_point_override', newVal);
+          // ==== UI 알림은 그대로
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('${challenge.title} 인증 완료! ${challenge.points}P 획득!')),
           );

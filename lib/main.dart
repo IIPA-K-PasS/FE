@@ -7,6 +7,7 @@ import 'features/tips/presentation/tips_screen.dart';
 import 'features/profile/presentation/profile_screen.dart';
 import 'features/auth/presentation/auth_test_screen.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
 
@@ -93,12 +94,15 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
               );
             },
           ),
+          // 알림 아이콘을 포인트 초기화 버튼으로 대체 (테스트용)
           IconButton(
-            icon: const Icon(
-                Icons.notifications_none,
-                color: Colors.black54,
-                size: 32),
-            onPressed: () {
+            icon: const Icon(Icons.notifications_none, color: Colors.black54, size: 32),
+            tooltip: '포인트 초기화',
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.remove('green_point_override');
+              if (mounted) setState(() {}); // 즉시 반영(마이/홈)
+              // TODO: 디버깅/테스트 끝나면 이 기능은 disable 하세요~
             },
           ),
           Padding(
