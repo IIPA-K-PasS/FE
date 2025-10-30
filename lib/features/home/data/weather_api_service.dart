@@ -21,38 +21,24 @@ class WeatherData {
 }
 
 class WeatherApiService {
-  final String? _apiKey = dotenv.env['OPENWEATHERMAP_API_KEY'];
-  static const String _baseUrl = 'https://api.openweathermap.org/data/2.5/weather';
-
-  Future<WeatherData> getWeather(double lat, double lon) async {
-    if (_apiKey == null) {
-      throw Exception("OpenWeatherMap API key is not configured in .env file");
+  String? _resolveKey() {
+    String v = const String.fromEnvironment('OPENWEATHERMAP_API_KEY');
+    if (v.isEmpty) {
+      try { v = dotenv.env['OPENWEATHERMAP_API_KEY'] ?? ''; } catch (_) {}
     }
+    return v.isEmpty ? null : v;
+  }
 
-    // API 요청 URL (단위: 섭씨, 언어: 한국어)
-    final url = '$_baseUrl?lat=$lat&lon=$lon&appid=$_apiKey&units=metric&lang=kr';
-
-    final response = await http.get(Uri.parse(url));
-
-    // ⭐ --- 디버깅 코드 추가 --- ⭐
-    if (kDebugMode) {
-      print('--- OpenWeatherMap API 응답 ---');
-      print('Request URL: $url');
-      print('Status Code: ${response.statusCode}');
-      // UTF-8로 디코딩하여 한글 깨짐 방지
-      print('Response Body: ${utf8.decode(response.bodyBytes)}');
-      print('-----------------------------');
+  Future<WeatherData?> getWeather(double lat, double lon) async {
+    final apiKey = _resolveKey();
+    if (apiKey == null) return null;
+    final url = Uri.parse('https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lon&appid=$apiKey&units=metric&lang=kr');
+    final res = await http.get(url);
+    if (res.statusCode == 200) {
+      final map = jsonDecode(res.body) as Map<String, dynamic>;
+      return WeatherData.fromJson(map);
     }
-    // ⭐ --- 디버깅 코드 끝 --- ⭐
-
-    if (response.statusCode == 200) {
-      // 한글 깨짐 방지를 위해 UTF-8 디코딩 후 파싱
-      return WeatherData.fromJson(json.decode(utf8.decode(response.bodyBytes)));
-    } else {
-      // 실패 시에도 오류 내용 포함
-      throw Exception(
-          'Failed to load weather data. Status: ${response.statusCode}, Body: ${utf8.decode(response.bodyBytes)}');
-    }
+    return null;
   }
 }
 

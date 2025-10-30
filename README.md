@@ -1,110 +1,127 @@
 # 🧾 Billow (빌로우) - Frontend
 
-**헤매는 사회초년생을 위한 첫 독립 가이드**
+**헤매는 사회초년생을 위한 AI 공과금·챌린지 관리 앱**
 
 ---
 
-### **✨ 주요 기능 (Key Features)**
-
-- **AI 공과금 리포트:** Naver Clova OCR을 활용한 고지서 자동 분석 및 시각화.
-- **그린 챌린지:** 일상 속 환경 보호 미션을 게임처럼 즐기고 인증하는 시스템.
-- **슬기로운 자취 생활:** 사회초년생을 위한 실용적인 생활 꿀팁 및 정보 제공.
-- **마이페이지 & 그린 마켓:** 활동 포인트를 지역화폐로 교환하는 실질적인 보상 허브.
-- **이웃 비교:** 위치 기반 데이터를 활용해 주변 평균 사용량과 비교 리포트 제공.
-
----
-
-### **🛠️ 기술 스택 (Tech Stack)**
-
-- **Main:** `Flutter`
-- **State Management:** `Riverpod`
-- **Navigation:** `go_router`
-- **API Communication:** `Dio`
-- **Dependency Injection:** `GetIt`
-- **Local Storage:** `shared_preferences`
-- **Collaboration:** `Git`, `GitHub`, `Figma`
+## ✨ 주요 기능
+- **AI 공과금 리포트:** 고지서 촬영/OCR → 자동 parsing 및 시각 리포트
+- **그린 챌린지:** 미션 수행, 인증(포인트 적립)
+- **슬기로운 자취 생활:** 생활 팁, 꿀팁 북마크/추천
+- **마이페이지 & 그린 마켓:** 포인트 → 지역화폐 교환, 활동 내역
+- **이웃 비교:** 내 사용량 vs 동네 평균 분석 리포트
+- **약관 동의:** native + github 전문 외부 링크 모두 제공
 
 ---
 
-### **🏗️ 아키텍처 (Architecture)**
-
-본 프로젝트는 **클린 아키텍처(Clean Architecture)**를 기반으로 MVVM(Model-View-ViewModel) 패턴을 구현합니다. 이는 UI, 비즈니스 로직, 데이터 계층을 명확하게 분리하여 유지보수성, 확장성, 그리고 테스트 용이성을 극대화합니다.
-
-- **Presentation Layer (UI):** 화면 렌더링 및 사용자 입력 처리 (`/presentation`)
-- **Domain Layer (Business Logic):** 모든 비즈니스 로직을 포함하는 순수한 Dart 코드 (`/domain`)
-- **Data Layer (Data Source):** API 통신, 로컬 데이터베이스 접근 등 외부 데이터 관련 로직 처리 (`/data`)
+## 🛠️ 기술 스택
+- **Main:** Flutter (Dart)
+- **상태관리:** Riverpod
+- **의존성:** Dio, shared_preferences, url_launcher, Kakao SDK 외
+- **협업/디자인:** GitHub, Figma
 
 ---
 
-## 🌿 Branch 전략
-
-본 프로젝트는 Gitflow 브랜치 전략을 따릅니다.
-
-<img width="600" height="800" alt="git" src="https://github.com/user-attachments/assets/6754c9a1-072e-4b74-b10d-a885f6887de4" />
-
-- `main`: 배포 가능한 단위의 브랜치
-- `release`: 배포 전 테스트용 브랜치
-- `develop`: 개발 중인 브랜치
-- `feature/#issue_number`: 개발 단위별 브랜치
-- `hotfix`: `master` 브랜치의 긴급 버그 수정 브랜치
-
-### 개발 흐름
-1. 개발할 기능에 대한 이슈 등록 후 번호 발급  
-2. `develop` 브랜치에서 분기 → `feature/#issue_number` 브랜치 생성 및 작업  
-3. 작업 완료 후 Pull Request 작성 → 리뷰 후 병합  
+## 🏗️ 아키텍처
+- **Clean Architecture + MVVM**
+- `/presentation` (UI), `/domain` (비즈니스로직), `/data` (API/DB 등) 명확 분리
 
 ---
 
-### **📝 Commit 규칙**
+## 🚀 실행 및 설치
 
-| 헤더 | 설명 |
-|---|---|
-| feat | 새로운 기능 추가 |
-| fix | 버그 수정 |
-| build | 빌드 환경, 외부 모듈(pubspec.yaml) 관련 수정 |
-| chore | 기타 자잘한 수정, 의존성 관리 |
-| ci | CI 관련 설정 수정 |
-| docs | 문서 수정 |
-| style | 코드 스타일 및 포맷 수정 |
-| refactor | 코드 리팩토링 |
-| test | 테스트 코드 수정 |
-| perf | 성능 개선 |
+### APK 빌드/설치 (Android)
+1. **Flutter 설치**: 3.x 이상
+2. 의존성 설치:
+   ```bash
+   flutter pub get
+   ```
+3. `.env` 파일 작성 (아래 예시 참고)
+4. APK 빌드:
+   ```bash
+   flutter build apk --release
+   ```
+5. 폰에 APK 설치 및 실행
 
----
-
-### **📌 Issue & 🔀 Pull Request**
-
-- **Issue:** 기능 또는 버그 수정 단위로 이슈를 등록하고, 템플릿에 따라 상세 내용을 작성합니다.
-- **Pull Request:** PR은 등록된 템플릿을 사용하여 작성하며, 코드 리뷰 후 병합합니다.
+### iOS
+- TestFlight/Ad-hoc 추후 지원
 
 ---
 
-### **🎯 Convention**
+### 환경 변수 파일 (.env) 예시
 
-#### **네이밍 규칙 (Naming Convention)**
+```env
+KAKAO_NATIVE_APP_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxx
+BASE_URL=https://api.example.com
+```
+- `BASE_URL`은 공공 테스트 API 주소로 공개해도 무방 (운영·내부 민감 정보는 별도 관리)
+- 카카오 키/API키 등은 제출시 별도 전달 권장
 
-- **Dart 파일 이름:** `snake_case` (`my_cool_feature.dart`)
-- **폴더 이름:** 소문자 `snake_case`
-- **클래스 이름:** `PascalCase`
-- **함수 및 변수:** `camelCase`
-- **상수:** `SNAKE_CASE` (const, static final)
-- **콜백 함수:** `on` 접두사 사용 (예: `onButtonClicked`)
-- **상태 변수:** `is`, `has` 접두사 사용 (예: `isLoading`)
-- 한국어 발음 표기는 사용하지 않습니다.
+- “사전 설치/환경 변수” 챕터에  
+  “**비밀키/환경파일(.env, local.properties)은 보안을 위해 git에 커밋되지 않으니 생성 예시와 위치를 아래처럼 반드시 직접 입력/복사해야 합니다**”  
+- 환경파일 미작성시 실행 불가/카카오 인증 불가/빌드오류 가능 강조
+
+- `.env.example`, `local.properties.example` 등을 커밋
+    - “이 파일을 복제/이름변경하여 본인의 값을 채워야 정상 실행됨” 주석 삽입
+    - ex:
+  
+---
+
+## 🧑‍💻 계정 안내/테스트
+
+- **카카오 소셜 로그인만 지원**  
+  (개인/임시 계정 필요 없음, 모든 기능 즉시 체험 가능)
 
 ---
 
-### **🚀 시작하기 (Getting Started)**
+## 💻 소스 및 협업툴
+- **GitHub:** [https://github.com/팀명/Repo](#)  
+- **Figma:** (선택사항) [링크](#)
 
-```bash
-# 1. 저장소 복제
-git clone [https://github.com/9oormthon-univ/2025_SEASONTHON_TEAM_83_FE.git](https://github.com/9oormthon-univ/2025_SEASONTHON_TEAM_83_FE.git)
+---
 
-# 2. 폴더 이동
-cd 2025_SEASONTHON_TEAM_83_FE
+## 📸 주요 앱 화면 (예시)
+- 온보딩
+- 메인/리포트
+- 챌린지
+- 약관동의
+- 꿀팁/북마크
+- 그린마켓/포인트
 
-# 3. 의존성 설치
-flutter pub get
+---
 
-# 4. 개발 서버 실행
-flutter run
+### 🔗 APK 다운로드/접속 URL
+
+- (구글드라이브/깃허브 릴리즈 등 실제 배포시 링크 삽입)
+- iOS 추후 지원(심사 참고)
+
+---
+
+## 📝 추가 안내
+- 자세한 API/구현 구조/은 README 혹은 접수신청서 PDF 내 포함
+- 모든 화면/기능 more detail 스크린샷 별도 제출
+- 문의사항은 issue/github/email로 응대
+
+---
+
+**문의 및 피드백 환영! 좋은 평가 부탁드립니다.**
+
+---
+
+## 🚨 [중요] 로컬 환경 변수 전달 및 실행 방법
+
+앱 실행 또는 빌드 시, 환경 변수(KEY)들을 반드시 아래처럼 --dart-define 옵션으로 전달해야 합니다.
+예시 (필수 키 모두 입력):
+
+```sh
+flutter run \
+  --dart-define=KAKAO_NATIVE_APP_KEY=여기에_카카오_네이티브_키 \
+  --dart-define=API_BASE_URL=여기에_API_URL \
+  --dart-define=NAVER_CLIENT_ID=네이버_ID \
+  --dart-define=NAVER_CLIENT_SECRET=네이버_시크릿 \
+  --dart-define=OPENWEATHERMAP_API_KEY=오픈웨더MAP키
+```
+
+- Android Studio/VSCode는 해당 옵션을 Run/Edit Configurations에서 "Additional run args" 또는 Arguments 입력란에 추가할 것
+- 빌드(`flutter build apk`, `flutter build web` 등)도 마찬가지로 --dart-define 옵션 필수
+- ⚠️ 전달하지 않으면 앱 실행 시점에 즉시 "xxx is not set (pass via --dart-define)" 에러로 종료됩니다!

@@ -56,6 +56,25 @@ class AuthService {
     }
   }
 
+  static Future<bool> loginWithKakaoAuthCodeWeb(String code) async {
+    try {
+      debugPrint('[Auth][WEB] sending authCode to server: len=${code.length}');
+      final Response response = await ApiClient.dio.post(
+        ApiConfig.kakaoLogin,
+        data: jsonEncode({ 'authCode': code, 'platform': 'web' }),
+      );
+      debugPrint('[Auth][WEB] /auth/kakao status: ${response.statusCode}');
+      final data = response.data as Map<String, dynamic>;
+      final String access = data['accessToken'] as String;
+      final String refresh = data['refreshToken'] as String;
+      await TokenStorage.saveTokens(access: access, refresh: refresh);
+      return true;
+    } catch (e) {
+      debugPrint('[Auth][WEB][ERROR] loginWithKakaoAuthCodeWeb failed: $e');
+      return false;
+    }
+  }
+
   static Future<Map<String, dynamic>?> fetchUserInfo() async {
     try {
       final Response response = await ApiClient.dio.get(ApiConfig.userInfo);
