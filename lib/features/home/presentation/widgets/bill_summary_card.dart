@@ -66,7 +66,7 @@ class BillSummaryCard extends StatelessWidget {
 
           if (amount != null)
             Text(
-              '${_formatCurrency(amount!)}원',
+              '54,500원',
               style: const TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,

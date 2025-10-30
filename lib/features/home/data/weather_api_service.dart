@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart'; // kDebugMode를 위해 import
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
@@ -33,10 +34,25 @@ class WeatherApiService {
 
     final response = await http.get(Uri.parse(url));
 
+    // ⭐ --- 디버깅 코드 추가 --- ⭐
+    if (kDebugMode) {
+      print('--- OpenWeatherMap API 응답 ---');
+      print('Request URL: $url');
+      print('Status Code: ${response.statusCode}');
+      // UTF-8로 디코딩하여 한글 깨짐 방지
+      print('Response Body: ${utf8.decode(response.bodyBytes)}');
+      print('-----------------------------');
+    }
+    // ⭐ --- 디버깅 코드 끝 --- ⭐
+
     if (response.statusCode == 200) {
-      return WeatherData.fromJson(json.decode(response.body));
+      // 한글 깨짐 방지를 위해 UTF-8 디코딩 후 파싱
+      return WeatherData.fromJson(json.decode(utf8.decode(response.bodyBytes)));
     } else {
-      throw Exception('Failed to load weather data. Status: ${response.statusCode}');
+      // 실패 시에도 오류 내용 포함
+      throw Exception(
+          'Failed to load weather data. Status: ${response.statusCode}, Body: ${utf8.decode(response.bodyBytes)}');
     }
   }
 }
+
