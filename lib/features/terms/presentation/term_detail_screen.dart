@@ -1,174 +1,86 @@
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import '../data/models/term_models.dart';
 
-class TermDetailScreen extends StatefulWidget {
+class TermDetailScreen extends StatelessWidget {
   final Term term;
-
   const TermDetailScreen({super.key, required this.term});
-
-  @override
-  State<TermDetailScreen> createState() => _TermDetailScreenState();
-}
-
-class _TermDetailScreenState extends State<TermDetailScreen> {
-  late final WebViewController _controller;
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeWebView();
-  }
-
-  void _initializeWebView() {
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (String url) {
-            setState(() {
-              _isLoading = true;
-            });
-          },
-          onPageFinished: (String url) {
-            setState(() {
-              _isLoading = false;
-            });
-          },
-        ),
-      );
-
-    // URL이 있으면 웹뷰로, 없으면 HTML로 표시
-    if (widget.term.contentUrl != null && widget.term.contentUrl!.isNotEmpty) {
-      _controller.loadRequest(Uri.parse(widget.term.contentUrl!));
-    } else {
-      _controller.loadHtmlString(_buildHtmlContent());
-    }
-  }
-
-  String _buildHtmlContent() {
-    return '''
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0;
-                padding: 20px;
-                background-color: #f8f9fa;
-            }
-            .container {
-                background-color: white;
-                border-radius: 12px;
-                padding: 24px;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                max-width: 800px;
-                margin: 0 auto;
-            }
-            .header {
-                border-bottom: 2px solid #e9ecef;
-                padding-bottom: 16px;
-                margin-bottom: 24px;
-            }
-            .title {
-                font-size: 24px;
-                font-weight: bold;
-                color: #212529;
-                margin: 0 0 8px 0;
-            }
-            .status {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                font-size: 14px;
-                color: ${widget.term.agreed ? '#28a745' : '#6c757d'};
-            }
-            .content {
-                font-size: 16px;
-                line-height: 1.8;
-                white-space: pre-wrap;
-                word-wrap: break-word;
-            }
-            .required-badge {
-                background-color: #dc3545;
-                color: white;
-                padding: 4px 8px;
-                border-radius: 4px;
-                font-size: 12px;
-                font-weight: bold;
-                margin-left: 8px;
-            }
-            .optional-badge {
-                background-color: #6c757d;
-                color: white;
-                padding: 4px 8px;
-                border-radius: 4px;
-                font-size: 12px;
-                margin-left: 8px;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="header">
-                <h1 class="title">
-                    ${widget.term.title}
-                    <span class="${widget.term.isRequired ? 'required-badge' : 'optional-badge'}">
-                        ${widget.term.isRequired ? '필수' : '선택'}
-                    </span>
-                </h1>
-                <div class="status">
-                    <span>${widget.term.agreed ? '✅ 동의함' : '❌ 미동의'}</span>
-                </div>
-            </div>
-            <div class="content">
-                ${widget.term.content.replaceAll('\n', '<br>')}
-            </div>
-        </div>
-    </body>
-    </html>
-    ''';
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(widget.term.title),
+        title: Text(term.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
         elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              if (widget.term.contentUrl != null && widget.term.contentUrl!.isNotEmpty) {
-                _controller.loadRequest(Uri.parse(widget.term.contentUrl!));
-              } else {
-                _controller.loadHtmlString(_buildHtmlContent());
-              }
-            },
-            tooltip: '새로고침',
-          ),
-        ],
       ),
-      body: Stack(
+      backgroundColor: Colors.grey[100],
+      body: ListView(
+        padding: const EdgeInsets.all(20),
         children: [
-          WebViewWidget(controller: _controller),
-          if (_isLoading)
-            const Center(
-              child: CircularProgressIndicator(
-                color: Colors.teal,
+          Row(
+            children: [
+              Text(term.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+              const SizedBox(width: 8),
+              _termBadge(term),
+              const Spacer(),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Icon(term.agreed ? Icons.check_circle : Icons.cancel,
+                size: 18,
+                color: term.agreed ? Colors.green : Colors.red,
+              ),
+              const SizedBox(width: 6),
+              Text(term.agreed ? '동의함' : '미동의',
+                style: TextStyle(
+                  color: term.agreed ? Colors.green : Colors.red,
+                  fontWeight: FontWeight.w500)
+              ),
+            ],
+          ),
+          const Divider(height: 30),
+          Text(
+            term.content,
+            style: const TextStyle(fontSize: 15, height: 1.6, color: Colors.black87),
+          ),
+          const SizedBox(height: 28),
+          if (term.contentUrl != null && term.contentUrl!.isNotEmpty)
+            Center(
+              child: TextButton.icon(
+                onPressed: () async {
+                  final url = term.contentUrl!;
+                  if (await canLaunchUrlString(url)) {
+                    launchUrlString(url, mode: LaunchMode.externalApplication);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('링크를 열 수 없습니다: $url')),
+                    );
+                  }
+                },
+                icon: const Icon(Icons.open_in_new, size: 18),
+                label: const Text('공식 전문 깃허브에서 보기', style: TextStyle(fontSize: 13)),
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _termBadge(Term term) {
+    return Container(
+      decoration: BoxDecoration(
+        color: term.isRequired ? Colors.red[100] : Colors.grey[200],
+        borderRadius: BorderRadius.circular(5),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      child: Text(
+        term.isRequired ? '필수' : '선택',
+        style: TextStyle(fontSize: 12, color: term.isRequired ? Colors.red[700] : Colors.grey[700], fontWeight: FontWeight.w600),
       ),
     );
   }
