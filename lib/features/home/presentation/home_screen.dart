@@ -1,15 +1,16 @@
 import 'package:billow/features/home/presentation/widgets/bill_type_selection_button.dart';
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../data/weather_api_service.dart';
-import '../domain/bill_entity.dart';
 import 'bill_preview_screen.dart';
 import 'neighborhood_setting_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import '../domain/bill_entity.dart';
 import 'widgets/ai_saving_forecast_card.dart';
 import 'widgets/bill_summary_card.dart';
 import 'widgets/neighborhood_comparison_card.dart';
 import '../../bills/presentation/monthly_report_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -32,6 +33,9 @@ class _HomePageState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ⭐ 변경점: 동네 설정 여부를 확인하는 플래그 생성
+    final bool isLocationSet = _locationName != '위치 정보 없음';
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
       body: SafeArea(
@@ -60,7 +64,9 @@ class _HomePageState extends State<HomeScreen> {
               const SizedBox(height: 20),
 
               // 세 번째 카드: 우리 동네 비교
+              // ⭐ 변경점: isLocationSet 플래그를 전달합니다.
               NeighborhoodComparisonCard(
+                isLocationSet: isLocationSet,
                 onPressed: _navigateToNeighborhoodSetting,
               ),
 
@@ -126,7 +132,7 @@ class _HomePageState extends State<HomeScreen> {
                   color: const Color(0xFFFBC02D),
                   onPressed: () {
                     // onPressed 내부에서 _pickImageAndNavigate를 호출합니다.
-                      _pickImageAndNavigate ('ELECTRICITY');
+                    _pickImageAndNavigate ('ELECTRICITY');
                   }),
               const SizedBox(height: 12),
 
@@ -192,6 +198,7 @@ class _HomePageState extends State<HomeScreen> {
   void _navigateToMonthlyReport() {
     Navigator.of(context).push(
       MaterialPageRoute(
+        // TODO: 실제 년/월 데이터를 전달하도록 수정 필요
         builder: (context) => const MonthlyReportScreen(year: 2025, month: 6),
       ),
     );
@@ -267,3 +274,4 @@ class _HomePageState extends State<HomeScreen> {
     }
   }
 }
+

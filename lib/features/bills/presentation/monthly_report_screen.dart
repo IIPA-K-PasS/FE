@@ -47,13 +47,20 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
         foregroundColor: Colors.black,
       ),
       backgroundColor: const Color(0xFFF6F7F9),
-      body: RefreshIndicator(
-        onRefresh: _load,
-        child: _loading
-            ? const Center(child: CircularProgressIndicator(color: Colors.teal))
-            : _error != null
-                ? Center(child: Text(_error!))
-                : _buildContent(context),
+      // ⭐ 1. body를 SafeArea 위젯으로 감싸줍니다.
+      body: SafeArea(
+        // ⭐ 2. AppBar가 상단 영역을 이미 처리하므로,
+        // 하단 시스템 UI만 피하도록 설정합니다.
+        top: false,
+        bottom: true,
+        child: RefreshIndicator(
+          onRefresh: _load,
+          child: _loading
+              ? const Center(child: CircularProgressIndicator(color: Colors.teal))
+              : _error != null
+              ? Center(child: Text(_error!))
+              : _buildContent(context),
+        ),
       ),
     );
   }
@@ -222,10 +229,10 @@ class _BarChartPainter extends CustomPainter {
     for (int i = 0; i <= 4; i++) {
       final double y = size.height - (i * size.height / 4);
       final double value = i * stepY;
-      
+
       // 격자선 그리기
       canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
-      
+
       // Y축 라벨 그리기
       final textPainter = TextPainter(
         text: TextSpan(
@@ -409,10 +416,10 @@ class _LineChartPainter extends CustomPainter {
     for (int i = 0; i <= 4; i++) {
       final double y = size.height - (i * size.height / 4);
       final double value = i * maxY / 4;
-      
+
       // 격자선 그리기
       canvas.drawLine(Offset(40, y), Offset(size.width, y), gridPaint);
-      
+
       // Y축 라벨 그리기
       final textPainter = TextPainter(
         text: TextSpan(
@@ -430,10 +437,10 @@ class _LineChartPainter extends CustomPainter {
       final double stepX = (size.width - 40) / (points.length - 1);
       for (int i = 0; i < points.length; i++) {
         final double x = 40 + stepX * i;
-        
+
         // X축 격자선 그리기
         canvas.drawLine(Offset(x, 0), Offset(x, size.height - 20), gridPaint);
-        
+
         // X축 라벨 그리기
         final textPainter = TextPainter(
           text: TextSpan(
@@ -449,25 +456,25 @@ class _LineChartPainter extends CustomPainter {
 
     // 라인 차트 그리기
     if (points.isEmpty) return;
-    
+
     final double stepX = (size.width - 40) / (points.length - 1);
     final Path path = Path();
-    
+
     for (int i = 0; i < points.length; i++) {
       final p = points[i];
       final double x = 40 + stepX * i;
       final double y = size.height - 20 - (p.fee / maxY * (size.height - 40)).clamp(0, size.height - 40);
-      
+
       if (i == 0) {
         path.moveTo(x, y);
       } else {
         path.lineTo(x, y);
       }
-      
+
       // 데이터 포인트 그리기
       canvas.drawCircle(Offset(x, y), 4, dotPaint);
     }
-    
+
     canvas.drawPath(path, linePaint);
   }
 
