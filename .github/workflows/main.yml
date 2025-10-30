@@ -23,20 +23,32 @@ jobs:
         with:
           channel: 'stable'
 
-      # ⭐ 3. (수정됨) Flutter 웹 설정 및 파일 생성
-      # 이 명령어가 'web' 폴더와 관련 설정 파일을 생성합니다.
+      # ⭐ 3. (추가됨) .env 파일 생성
+      # GitHub Secrets에 저장된 값들을 .env 파일로 생성합니다.
+      - name: ✍️ Create .env file
+        run: |
+          echo "API_BASE_URL=${{ secrets.API_BASE_URL }}" >> .env
+          echo "KAKAO_NATIVE_APP_KEY=${{ secrets.KAKAO_NATIVE_APP_KEY }}" >> .env
+          echo "NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}" >> .env
+          echo "NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}" >> .env
+          echo "OPENWEATHERMAP_API_KEY=${{ secrets.OPENWEATHERMAP_API_KEY }}" >> .env
+          echo ".env 파일 생성 완료:"
+          cat .env # 생성된 파일 내용 확인 (키 값 자체는 마스킹 처리됨)
+
+      # 4. Flutter 웹 설정 및 파일 생성
       - name: 🌐 Configure Flutter for Web
         run: flutter create . --platforms web
 
-      # 4. 프로젝트 의존성 설치
+      # 5. 프로젝트 의존성 설치
       - name: 🧩 Get Dependencies
         run: flutter pub get
 
-      # 5. Flutter 웹 앱 빌드
+      # 6. Flutter 웹 앱 빌드 (⭐ 수정됨)
+      # --web-renderer html 옵션을 추가하여 Wasm 호환성 오류 해결
       - name: 🏗️ Build Web App
-        run: flutter build web --release --base-href "/FE/"
+        run: flutter build web --release --web-renderer html --base-href "/FE/"
 
-      # 6. 빌드 결과물을 GitHub Pages에 배포
+      # 7. 빌드 결과물을 GitHub Pages에 배포
       - name: 🚀 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
