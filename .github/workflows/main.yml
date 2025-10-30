@@ -30,7 +30,7 @@ jobs:
         working-directory: billow # ⬅️ 여기에 실제 Flutter 프로젝트 폴더 이름을 입력하세요!
 
       - name: 🏗️ Build Web App
-        run: flutter build web --release --base-href "/billow/"
+        run: flutter build web --release --base-href "/FE/"
         working-directory: billow # ⬅️ 여기에 실제 Flutter 프로젝트 폴더 이름을 입력하세요!
 
       # 5. 빌드 결과물을 GitHub Pages에 배포
