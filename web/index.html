@@ -41,7 +41,7 @@
       var scriptTag = document.createElement('script');
       scriptTag.src = 'flutter.js';
       scriptTag.defer = true;
-      scriptTag.onload = function() { _flutter.loader.loadEntrypoint({}).then(function(engineInitializer) { return engineInitializer.initializeEngine(); }).then(function(appRunner) { return appRunner.runApp(); }); };
+      scriptTag.onload = function() { _flutter.loader.load({}).then(function(engineInitializer) { return engineInitializer.initializeEngine(); }).then(function(appRunner) { return appRunner.runApp(); }); };
       document.body.append(scriptTag);
     });
   </script>
