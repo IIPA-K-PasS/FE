@@ -36,7 +36,7 @@ jobs:
           flutter clean
           flutter build web \
             --release \
-            --no-service-worker-generation \ # ⭐ 다시 추가: 좀비 워커 등록 코드 자체를 제거
+            --pwa-strategy=none \
             --base-href "/FE/" \
             --dart-define=API_BASE_URL="${{ secrets.API_BASE_URL }}" \
             --dart-define=KAKAO_NATIVE_APP_KEY="${{ secrets.KAKAO_NATIVE_APP_KEY }}" \
