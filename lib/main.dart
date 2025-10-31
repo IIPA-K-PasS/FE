@@ -15,7 +15,13 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // 4. 로컬 디버깅을 위해 .env 파일 로드
-  await dotenv.load(fileName: ".env");
+  if (!kIsWeb) {
+    try {
+      await dotenv.load(fileName: ".env");
+    } catch (e) {
+      print('⚠️ .env 파일을 로드할 수 없습니다: $e');
+    }
+  }
 
   // 5. 플랫폼(웹/모바일)에 따라 다른 카카오 키로 SDK 초기화
   if (kIsWeb) {
