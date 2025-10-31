@@ -54,6 +54,14 @@ jobs:
           
           print(f'📄 index.html size before: {len(content)} bytes')
           
+          # CSP 메타 태그 추가 (Kakao SDK의 eval 허용)
+          csp_meta = '<meta http-equiv="Content-Security-Policy" content="script-src \'self\' \'unsafe-eval\' \'unsafe-inline\' https://developers.kakao.com https://*.kakao.com; connect-src \'self\' https://developers.kakao.com https://*.kakao.com https://kauth.kakao.com">'
+          
+          # </head> 앞에 CSP 추가 (이미 있으면 추가 안 함)
+          if 'Content-Security-Policy' not in content:
+              content = content.replace('</head>', f'  {csp_meta}\n</head>', 1)
+              print('✅ CSP meta tag added')
+          
           # 기존 Kakao 스크립트 제거 (플레이스홀더 포함)
           pattern = r'<script src="https://developers\.kakao\.com/sdk/js/kakao\.js"></script>.*?window\.kakaoLogin = kakaoLogin;[\s\S]*?</script>'
           content = re.sub(pattern, '', content, flags=re.DOTALL)
