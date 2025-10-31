@@ -2,7 +2,7 @@ name: web kakao api added
 
 on:
   push:
-    branches: [ "kpaasTest" ] # 1. 'develop'에서 'kpaasTest'로 변경
+    branches: [ "develop" ] # 1. 'develop'에서 'kpaasTest'로 변경
     
 jobs:
   build_and_deploy:
