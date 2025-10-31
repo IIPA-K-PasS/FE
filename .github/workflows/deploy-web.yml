@@ -99,7 +99,7 @@ jobs:
               script_sources.add("https://www.gstatic.com")
               script_sources.add("https://*.gstatic.com")
               directives['script-src'] = script_sources
-              directives['script-src-elem'] = script_sources  # 명시적 추가
+              directives['script-src-elem'] = script_sources
               print(f"✅ 'script-src' 및 'script-src-elem' 수정")
 
               # connect-src 수정
@@ -170,7 +170,7 @@ jobs:
           <script>
             (function initKakao() {{
               if (typeof Kakao === 'undefined') {{
-                console.error('Kakao SDK 로드 실패');
+                console.error('❌ Kakao SDK 로드 실패');
                 return;
               }}
               try {{
@@ -216,28 +216,70 @@ jobs:
         env:
           JS_KEY: ${{ secrets.KAKAO_JAVASCRIPT_APP_KEY }}
 
-      - name: ♻️ Cache bust and Clean Service Worker
+      - name: ♻️ Service Worker 완전 제거 및 Cache Bust
         run: |
           CACHE_BUST="${GITHUB_SHA:0:8}-${GITHUB_RUN_NUMBER}"
           echo "🔄 Cache bust: $CACHE_BUST"
           
-          # Service Worker 완전 제거
+          # Service Worker 파일 삭제
           rm -f ./build/web/flutter_service_worker.js
           rm -f ./build/web/version.json
           echo "✅ Service Worker 파일 삭제 완료"
           
-          # index.html에서 Service Worker 로딩 코드 제거
+          # flutter_bootstrap.js 수정 (Service Worker 등록 코드 제거)
+          if [ -f "./build/web/flutter_bootstrap.js" ]; then
+            python3 << 'PYTHON_EOF'
+          import re
+          
+          bootstrap_path = './build/web/flutter_bootstrap.js'
+          try:
+              with open(bootstrap_path, 'r', encoding='utf-8') as f:
+                  content = f.read()
+              
+              # Service Worker 등록 관련 코드 패턴 제거
+              patterns = [
+                  # navigator.serviceWorker.register 전체 블록
+                  r"navigator\.serviceWorker\.register\([^)]*\)\.then[^}]*\}[^}]*\}[^}]*\}",
+                  r"navigator\.serviceWorker\.register\([^)]*\)[^;]*;?",
+                  # if ('serviceWorker' in navigator) 블록
+                  r"if\s*\(\s*['\"]serviceWorker['\"]\s+in\s+navigator\s*\)\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}",
+                  # window.addEventListener('load') 내부 serviceWorker 관련
+                  r"window\.addEventListener\(['\"]load['\"],\s*(?:function\(\)\s*\{|\(\)\s*=>\s*\{)[^{}]*serviceWorker[^{}]*(?:\{[^{}]*\}[^{}]*)*\}\s*\);?",
+              ]
+              
+              original_length = len(content)
+              for pattern in patterns:
+                  content = re.sub(pattern, '// Service Worker disabled', content, flags=re.DOTALL)
+              
+              if len(content) != original_length:
+                  print(f'✅ flutter_bootstrap.js에서 Service Worker 코드 제거 ({original_length} -> {len(content)} bytes)')
+              else:
+                  print('ℹ️ flutter_bootstrap.js에 Service Worker 코드 없음')
+              
+              with open(bootstrap_path, 'w', encoding='utf-8') as f:
+                  f.write(content)
+                  
+          except FileNotFoundError:
+              print('⚠️ flutter_bootstrap.js 파일 없음')
+          except Exception as e:
+              print(f'⚠️ flutter_bootstrap.js 처리 중 오류: {e}')
+          PYTHON_EOF
+          else
+            echo "⚠️ flutter_bootstrap.js 파일이 없습니다"
+          fi
+          
+          # index.html에서 Service Worker 관련 코드 제거
           python3 << 'PYTHON_EOF'
           import re
           
           with open('./build/web/index.html', 'r', encoding='utf-8') as f:
               content = f.read()
           
-          # Service Worker 등록 코드 제거 (다양한 패턴 대응)
+          # Service Worker 등록 코드 제거
           patterns = [
               r"navigator\.serviceWorker\.register\([^)]+\)[^;]*;?",
-              r"if\s*\(\s*['\"]serviceWorker['\"]\s+in\s+navigator\s*\)\s*\{[^}]+\}",
-              r"window\.addEventListener\(['\"]load['\"],\s*\(\)\s*=>\s*\{[^}]*serviceWorker[^}]*\}\s*\);?"
+              r"if\s*\(\s*['\"]serviceWorker['\"]\s+in\s+navigator\s*\)\s*\{[^}]*(?:\{[^}]*\}[^}]*)*\}",
+              r"window\.addEventListener\(['\"]load['\"],\s*(?:function\(\)|(?:\(\)\s*=>))\s*\{[^}]*serviceWorker[^}]*(?:\{[^}]*\}[^}]*)*\}\s*\);?",
           ]
           
           for pattern in patterns:
@@ -246,10 +288,10 @@ jobs:
           with open('./build/web/index.html', 'w', encoding='utf-8') as f:
               f.write(content)
           
-          print('✅ Service Worker 로딩 코드 제거 완료')
+          print('✅ index.html Service Worker 코드 제거 완료')
           PYTHON_EOF
           
-          # flutter.js 캐시 무효화
+          # Cache busting
           sed -i "s|scriptTag.src = 'flutter.js';|scriptTag.src = 'flutter.js?v=$CACHE_BUST';|g" ./build/web/index.html
           sed -i "s|flutter_bootstrap.js|flutter_bootstrap.js?v=$CACHE_BUST|g" ./build/web/index.html || true
           sed -i "s|main.dart.js|main.dart.js?v=$CACHE_BUST|g" ./build/web/index.html || true
@@ -259,9 +301,22 @@ jobs:
             sed -i "s|</head>|  <meta name=\"version\" content=\"$CACHE_BUST\">\n</head>|" ./build/web/index.html
           fi
           
-          # manifest.json 확인
+          echo "✅ Cache busting 완료: $CACHE_BUST"
+
+      - name: 🎨 Add Favicon
+        run: |
+          # 간단한 SVG favicon 생성 (404 방지)
+          cat > ./build/web/favicon.ico << 'FAVICON_EOF'
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+            <rect width="100" height="100" fill="#4285f4"/>
+            <text x="50" y="65" font-size="60" text-anchor="middle" fill="white" font-family="Arial">B</text>
+          </svg>
+          FAVICON_EOF
+          echo "✅ favicon.ico 생성 완료"
+
+      - name: 📝 Ensure manifest.json
+        run: |
           if [ ! -f "./build/web/manifest.json" ]; then
-            echo "⚠️ manifest.json 생성 중..."
             cat > ./build/web/manifest.json << 'MANIFEST_EOF'
           {
             "name": "Billow",
@@ -269,31 +324,46 @@ jobs:
             "start_url": "./",
             "display": "standalone",
             "background_color": "#ffffff",
-            "theme_color": "#ffffff",
+            "theme_color": "#4285f4",
             "description": "Billow Web App",
             "orientation": "portrait-primary",
             "prefer_related_applications": false,
             "icons": []
           }
           MANIFEST_EOF
+            echo "✅ manifest.json 생성 완료"
+          else
+            echo "✅ manifest.json 이미 존재"
           fi
-          
-          echo "✅ Cache busting 완료: $CACHE_BUST"
 
       - name: 🔍 Verify Configuration
         run: |
-          echo "=== CSP 확인 ==="
-          grep -o 'Content-Security-Policy" content="[^"]*"' ./build/web/index.html || true
+          echo "=== 📋 CSP 확인 ==="
+          grep -o 'Content-Security-Policy" content="[^"]*"' ./build/web/index.html | head -c 200 || true
+          echo "..."
           echo ""
-          echo "=== Kakao SDK 확인 ==="
+          echo "=== 🔐 Kakao SDK 확인 ==="
           grep -o 'kakao.*\.js' ./build/web/index.html || true
           echo ""
-          echo "=== Service Worker 확인 ==="
+          echo "=== 🚫 Service Worker 확인 ==="
           if grep -q "serviceWorker" ./build/web/index.html; then
-            echo "⚠️ Service Worker 코드가 여전히 존재합니다"
+            echo "⚠️ index.html에 Service Worker 코드 존재"
+            grep -n "serviceWorker" ./build/web/index.html || true
           else
-            echo "✅ Service Worker 코드 없음"
+            echo "✅ index.html에 Service Worker 코드 없음"
           fi
+          
+          if [ -f "./build/web/flutter_bootstrap.js" ]; then
+            if grep -q "serviceWorker" ./build/web/flutter_bootstrap.js; then
+              echo "⚠️ flutter_bootstrap.js에 Service Worker 코드 존재"
+            else
+              echo "✅ flutter_bootstrap.js에 Service Worker 코드 없음"
+            fi
+          fi
+          
+          echo ""
+          echo "=== 📦 파일 목록 ==="
+          ls -lh ./build/web/*.{html,js,json,ico} 2>/dev/null || true
 
       - name: 🚀 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
