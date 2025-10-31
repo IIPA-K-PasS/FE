@@ -19,13 +19,23 @@ jobs:
         with:
           channel: 'stable'
       
-      - name: 🌐 Enable Flutter Web
-        run: flutter config --enable-web
+      # ⭐ web 폴더가 없으면 생성
+      - name: 🌐 Create Web Platform
+        run: |
+          if [ ! -d "web" ]; then
+            flutter create . --platforms web
+          fi
       
       - name: 🧩 Get Dependencies
         run: flutter pub get
       
-      # ⭐ --web-renderer=html 옵션 제거!
+      # ⭐ web/index.html에 base href placeholder 추가
+      - name: 📝 Add Base Href Placeholder
+        run: |
+          if ! grep -q 'FLUTTER_BASE_HREF' web/index.html; then
+            sed -i 's|<head>|<head>\n  <base href="$FLUTTER_BASE_HREF">|' web/index.html
+          fi
+      
       - name: 🏗️ Build Web App
         run: |
           flutter build web --release \
