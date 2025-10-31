@@ -181,20 +181,37 @@ jobs:
         env:
           JS_KEY: ${{ secrets.KAKAO_JAVASCRIPT_KEY }} # GitHub Secret 이름 확인
 
-      # --- 3. 캐시 무효화 (SW 제거는 빌드 스텝에서 처리) ---
+      # --- 3. 캐시 무효화 (실제 HTML 구조에 맞춤) ---
       - name: ♻️ Bust cache and disable Service Worker
         run: |
-          # flutter_bootstrap.js 캐시 무효화 쿼리 추가
-          sed -i "s|flutter_bootstrap.js|flutter_bootstrap.js?v=${GITHUB_RUN_NUMBER}|" ./build/web/index.html || true
-          # main.dart.js 캐시 무효화 (새 템플릿에선 bootstrap에서 로드하지만 방어적으로 처리)
-          sed -i "s|main.dart.js|main.dart.js?v=${GITHUB_RUN_NUMBER}|" ./build/web/index.html || true
-          # HTML 자체 캐시 방지 메타 추가
-          sed -i "s|</head>|  <meta http-equiv=\"Cache-Control\" content=\"no-store, no-cache, must-revalidate, max-age=0\">\n  <meta http-equiv=\"Pragma\" content=\"no-cache\">\n  <meta http-equiv=\"Expires\" content=\"0\">\n</head>|" ./build/web/index.html || true
-          # ⭐ SW 파일 제거 라인 삭제 (빌드 시 --no-service-worker-generation 플래그가 처리함)
-          # rm -f ./build/web/flutter_service_worker.js || true
-          # 버전 파일 제거 (강제 재로드 유도)
+          CACHE_BUST="${GITHUB_SHA:0:8}-${GITHUB_RUN_NUMBER}"
+          echo "🔄 Cache bust version: $CACHE_BUST"
+          
+          # flutter.js 캐시 무효화 (JavaScript 코드 내부의 문자열 교체)
+          sed -i "s|scriptTag.src = 'flutter.js';|scriptTag.src = 'flutter.js?v=$CACHE_BUST';|g" ./build/web/index.html
+          echo "✅ flutter.js 캐시 무효화 완료"
+          
+          # flutter_bootstrap.js도 혹시 모르니 처리
+          sed -i "s|flutter_bootstrap.js|flutter_bootstrap.js?v=$CACHE_BUST|g" ./build/web/index.html || true
+          
+          # main.dart.js 캐시 무효화
+          sed -i "s|main.dart.js|main.dart.js?v=$CACHE_BUST|g" ./build/web/index.html || true
+          
+          # HTML 자체 캐시 방지 메타가 이미 있는지 확인하고 없으면 추가
+          if ! grep -q 'meta name="version"' ./build/web/index.html; then
+            sed -i "s|</head>|  <meta name=\"version\" content=\"$CACHE_BUST\">\n</head>|" ./build/web/index.html
+            echo "✅ 버전 메타 태그 추가 완료"
+          fi
+          
+          # 버전 파일 제거
           rm -f ./build/web/version.json || true
-
+          rm -f ./build/web/flutter_service_worker.js || true
+          
+          # 수정 결과 확인 (디버깅용)
+          echo "📄 수정된 index.html의 flutter.js 로딩 부분:"
+          grep -A2 "scriptTag.src" ./build/web/index.html || true
+          
+          echo "✅ Cache busting completed with version: $CACHE_BUST"
       # --- 4. 배포 (force_orphan 유지) ---
       - name: 🚀 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
