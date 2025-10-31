@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:billow/main.dart';
+import 'package:billow/main.dart' hide MainNavigationPage;
 import '../../../services/auth_service.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
 import '../../../core/animation/slide_route.dart';
 import '../../terms/data/term_api_service.dart';
 import '../../terms/presentation/terms_agreement_screen.dart';
+import 'main_navigation_page.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});

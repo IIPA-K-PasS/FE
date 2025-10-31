@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart'; // 1. dotenv import 확인
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 // ... (Address 모델은 동일)
@@ -27,35 +27,33 @@ class Address {
 }
 
 class NaverMapApiService {
-  // 2. final 변수로 선언
   final String _clientId;
   final String _clientSecret;
 
-  // 3. 생성자에서 하이브리드 로직을 직접 구현
   NaverMapApiService()
-      : _clientId = const String.fromEnvironment('NAVER_CLIENT_ID').isEmpty
-      ? dotenv.env['NAVER_CLIENT_ID'] ?? ''
-      : const String.fromEnvironment('NAVER_CLIENT_ID'),
-        _clientSecret =
-        const String.fromEnvironment('NAVER_CLIENT_SECRET').isEmpty
-            ? dotenv.env['NAVER_CLIENT_SECRET'] ?? ''
-            : const String.fromEnvironment('NAVER_CLIENT_SECRET');
+      : _clientId = _getEnv('NAVER_CLIENT_ID'),
+        _clientSecret = _getEnv('NAVER_CLIENT_SECRET');
 
-  // 4. _getEnv 헬퍼 함수 제거 (더 이상 필요 없음)
-  // static String _getEnv(String key) { ... }
+  static String _getEnv(String key) {
+    String value = String.fromEnvironment(key);
+    if (value.isEmpty) {
+      value = dotenv.env[key] ?? '';
+    }
+    return value;
+  }
 
   // Geocoding: 주소 검색
   Future<List<Address>> searchAddress(String query) async {
-    // 5. 키 유효성 검사 (isEmpty 사용)
     if (_clientId.isEmpty || _clientSecret.isEmpty) {
       throw Exception(
           "API keys are not configured in .env or via --dart-define");
     }
-// ... (이하 동일)
+
     final response = await http.get(
       Uri.parse(
           'https://maps.apigw.ntruss.com/map-geocode/v2/geocode?query=$query'),
       headers: {
+        // ⭐ 오류 수정: id, secret -> _clientId, _clientSecret
         'X-NCP-APIGW-API-KEY-ID': _clientId,
         'X-NCP-APIGW-API-KEY': _clientSecret,
       },
@@ -80,11 +78,12 @@ class NaverMapApiService {
       throw Exception(
           "API keys are not configured in .env or via --dart-define");
     }
-// ... (이하 동일)
+
     final response = await http.get(
       Uri.parse(
           'https://maps.apigw.ntruss.com/map-reversegeocode/v2/gc?coords=$lon,$lat&output=json'),
       headers: {
+        // ⭐ 오류 수정: id, secret -> _clientId, _clientSecret
         'X-NCP-APIGW-API-KEY-ID': _clientId,
         'X-NCP-APIGW-API-KEY': _clientSecret,
       },
