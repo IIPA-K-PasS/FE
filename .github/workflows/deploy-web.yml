@@ -225,6 +225,15 @@ jobs:
           grep -A2 "scriptTag.src" ./build/web/index.html || true
           
           echo "✅ Cache busting completed with version: $CACHE_BUST"
+      
+      - name: 🔍 Final check of index.html before deploy
+        run: |
+          echo "📋 배포 직전 최종 index.html 내용:"
+          cat ./build/web/index.html
+          echo ""
+          echo "📋 CSP 메타 태그 확인:"
+          grep -A0 "Content-Security-Policy" ./build/web/index.html || echo "❌ CSP 태그를 찾지 못했습니다!"
+      
       # --- 4. 배포 (force_orphan 유지) ---
       - name: 🚀 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
