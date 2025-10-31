@@ -180,7 +180,7 @@ jobs:
           print(f'📄 index.html 수정 완료. 최종 크기: {len(content)} bytes')
           EOF
         env:
-          JS_KEY: ${{ secrets.KAKAO_JAVASCRIPT_KEY }} # GitHub Secret 이름 확인
+          JS_KEY: ${{ secrets.KAKAO_JAVASCRIPT_APP_KEY }} # GitHub Secret 이름 확인
 
       # --- 3. 캐시 무효화 (실제 HTML 구조에 맞춤) ---
       - name: ♻️ Bust cache and disable Service Worker
