@@ -23,7 +23,6 @@ jobs:
       - name: 🧩 Get Dependencies
         run: flutter pub get
 
-      # ⭐ .env 파일 생성 대신 --dart-define을 사용 (올바른 방법입니다)
       - name: 🏗️ Build Web App
         run: |
           flutter clean
@@ -36,7 +35,7 @@ jobs:
             --dart-define=NAVER_CLIENT_SECRET="${{ secrets.NAVER_CLIENT_SECRET }}" \
             --dart-define=OPENWEATHERMAP_API_KEY="${{ secrets.OPENWEATHERMAP_API_KEY }}"
 
-      # ⭐ 핵심 수정: Python 스크립트가 기존 CSP를 '수정'하도록 변경
+      # ⭐ 핵심 수정: Python 스크립트가 CSP를 '분석'하고 '재조합'하도록 변경
       - name: 🔐 Modify CSP and Inject Kakao SDK
         run: |
           python3 << 'EOF'
@@ -60,53 +59,66 @@ jobs:
 
           print(f'📄 index.html 원본 크기: {len(content)} bytes')
 
-          # --- 1. CSP 태그 수정 (핵심 변경 사항) ---
+          # --- 1. CSP 태그 수정 (더욱 강력한 방식으로 변경) ---
           csp_pattern = re.compile(r'(<meta http-equiv="Content-Security-Policy" content=")(.*?)(">)')
           match = csp_pattern.search(content)
           
           if match:
               print("✅ Flutter가 생성한 기존 CSP 태그를 찾았습니다.")
               original_csp_content = match.group(2)
-              new_csp_content = original_csp_content
+              print(f"ℹ️ 발견된 원본 CSP: {original_csp_content}")
               
-              # script-src에 'unsafe-eval' 및 Kakao 도메인 추가
-              script_src_pattern = re.compile(r"(script-src\s+)([^;]+)")
-              if script_src_pattern.search(new_csp_content):
-                  new_csp_content = script_src_pattern.sub(
-                      r"\1\2 'unsafe-eval' https://developers.kakao.com https://*.kakao.com", 
-                      new_csp_content
-                  )
-                  print("✅ script-src에 'unsafe-eval'과 Kakao 도메인을 추가했습니다.")
-              else:
-                  # script-src가 없는 경우 (드묾)
-                  new_csp_content += "; script-src 'self' 'unsafe-eval' https://developers.kakao.com https://*.kakao.com"
-                  print("⚠️ script-src를 찾지 못해 새로 추가합니다.")
+              # 1. 기존 지시문 파싱
+              directives = {}
+              if original_csp_content:
+                  parts = original_csp_content.split(';')
+                  for part in parts:
+                      part = part.strip()
+                      if part:
+                          space_index = part.find(' ')
+                          if space_index != -1:
+                              name = part[:space_index]
+                              values = part[space_index+1:].split()
+                              directives[name] = set(values) # set을 사용해 중복 방지
+                          else:
+                              directives[part] = set()
 
-              # connect-src에 Kakao 도메인 추가
-              connect_src_pattern = re.compile(r"(connect-src\s+)([^;]+)")
-              if connect_src_pattern.search(new_csp_content):
-                  new_csp_content = connect_src_pattern.sub(
-                      r"\1\2 https://kauth.kakao.com https://*.kakao.com", 
-                      new_csp_content
-                  )
-                  print("✅ connect-src에 Kakao 도메인을 추가했습니다.")
-              else:
-                  new_csp_content += "; connect-src 'self' https://kauth.kakao.com https://*.kakao.com"
-                  print("⚠️ connect-src를 찾지 못해 새로 추가합니다.")
+              # 2. script-src 수정/추가
+              script_sources = directives.get('script-src', {"'self'"}) # 없으면 'self' 기본값
+              script_sources.add("'unsafe-eval'")
+              script_sources.add("https://developers.kakao.com")
+              script_sources.add("https://*.kakao.com")
+              directives['script-src'] = script_sources
+              print(f"✅ 'script-src' 수정됨: {' '.join(sorted(list(script_sources)))}")
 
-              # 수정한 CSP 내용으로 원본 HTML 교체
+              # 3. connect-src 수정/추가
+              connect_sources = directives.get('connect-src', {"'self'"}) # 없으면 'self' 기본값
+              connect_sources.add("https://kauth.kakao.com")
+              connect_sources.add("https://*.kakao.com")
+              directives['connect-src'] = connect_sources
+              print(f"✅ 'connect-src' 수정됨: {' '.join(sorted(list(connect_sources)))}")
+
+              # 4. CSP content 문자열 재조합
+              new_csp_parts = []
+              for name, values in directives.items():
+                  if values:
+                      new_csp_parts.append(f"{name} {' '.join(sorted(list(values)))}")
+                  else:
+                      new_csp_parts.append(name) # 값이 없는 지시문
+              
+              new_csp_content = '; '.join(new_csp_parts)
+              
+              # 5. 원본 HTML의 CSP content 교체
               content = csp_pattern.sub(f'\\1{new_csp_content}\\3', content)
-              print("✅ CSP 메타 태그 수정 완료.")
+              print(f"✅ CSP 메타 태그를 새 내용으로 교체했습니다: {new_csp_content}")
           
           else:
               print("⚠️ Flutter가 생성한 CSP 태그를 찾지 못했습니다. 새 태그를 주입합니다. (비권장)")
-              # 기존 로직(Fallback)
-              csp_meta = '<meta http-equiv="Content-Security-Policy" content="script-src \'self\' \'unsafe-eval\' \'unsafe-inline\' https://developers.kakao.com https://*.kakao.com; connect-src \'self\' https://developers.kakao.com https://*.kakao.com https://kauth.kakao.com">'
+              csp_meta = '<meta http-equiv="Content-Security-Policy" content="script-src \'self\' \'unsafe-eval\' https://developers.kakao.com https://*.kakao.com; connect-src \'self\' https://kauth.kakao.com https://*.kakao.com">'
               content = content.replace('</head>', f'  {csp_meta}\n</head>', 1)
 
           # --- 2. Kakao SDK 스크립트 주입 (기존 로직 유지) ---
           
-          # 혹시 모를 기존 플레이스홀더 스크립트 제거
           pattern = r'<script src="https://developers\.kakao\.com/sdk/js/kakao\.js"></script>.*?window\.kakaoLogin = kakaoLogin;[\s\S]*?</script>'
           content = re.sub(pattern, '', content, flags=re.DOTALL)
           print("ℹ️ 기존 카카오 스크립트(플레이스홀더) 제거 시도")
