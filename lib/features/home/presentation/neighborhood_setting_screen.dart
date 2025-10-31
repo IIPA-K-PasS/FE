@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/naver_map_api_service.dart';
+
+// 웹에서는 geolocator를 임포트하지 않음
+import 'geolocator_stub.dart' // Default stub
+    if (dart.library.io) 'package:geolocator/geolocator.dart'; // Real import on native
 
 class NeighborhoodSettingScreen extends StatefulWidget {
   const NeighborhoodSettingScreen({super.key});
@@ -134,19 +138,21 @@ class _NeighborhoodSettingScreenState extends State<NeighborhoodSettingScreen> {
               ),
               // ⭐ 변경점: 버튼 위 간격을 조금 더 줍니다. (필요에 따라 조절)
               const SizedBox(height: 10),
-              ElevatedButton.icon(
-                onPressed: _isLoading ? null : _findCurrentLocation,
-                icon: const Icon(Icons.my_location),
-                label: const Text('현재 위치로 찾기'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  elevation: 0,
+              // 웹에서는 현재 위치 버튼 숨기기
+              if (!kIsWeb)
+                ElevatedButton.icon(
+                  onPressed: _isLoading ? null : _findCurrentLocation,
+                  icon: const Icon(Icons.my_location),
+                  label: const Text('현재 위치로 찾기'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
+                  ),
                 ),
-              ),
               // ⭐ 변경점: 버튼 아래 간격을 조금 더 줍니다. (필요에 따라 조절)
               const SizedBox(height: 24),
             ],

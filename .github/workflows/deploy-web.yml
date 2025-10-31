@@ -6,38 +6,39 @@ on:
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
-    
+
     permissions:
       contents: write
     
     steps:
+      # 2. 레포지토리 코드 가져오기
       - name: 📦 Checkout Repository
         uses: actions/checkout@v4
-      
+
       - name: ☕ Set up Flutter SDK
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      
+
       - name: 🌐 Create Web Platform
         run: |
           if [ ! -d "web" ]; then
             flutter create . --platforms web
           fi
-      
+
       # ⭐ 빈 .env 파일 생성 (pubspec.yaml asset 오류 방지)
       - name: 📄 Create Empty .env File
         run: touch .env
-      
+
       - name: 🧩 Get Dependencies
         run: flutter pub get
-      
+
       - name: 📝 Add Base Href Placeholder
         run: |
           if ! grep -q 'FLUTTER_BASE_HREF' web/index.html; then
             sed -i 's|<head>|<head>\n  <base href="$FLUTTER_BASE_HREF">|' web/index.html
           fi
-      
+
       - name: 🏗️ Build Web App
         run: |
           flutter build web --release \
@@ -48,7 +49,7 @@ jobs:
             --dart-define=NAVER_CLIENT_ID="${{ secrets.NAVER_CLIENT_ID }}" \
             --dart-define=NAVER_CLIENT_SECRET="${{ secrets.NAVER_CLIENT_SECRET }}" \
             --dart-define=OPENWEATHERMAP_API_KEY="${{ secrets.OPENWEATHERMAP_API_KEY }}"
-      
+
       - name: 🚀 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:

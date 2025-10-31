@@ -29,7 +29,7 @@ class LoginScreen extends StatelessWidget {
                 ),
               ),
               Text(
-                'Billow',
+                'Billow v2', // web deploy cache test label
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 50,

@@ -56,7 +56,7 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
             const SizedBox(height: 20),
             Text(
-              'Billow',
+              'Billow v3',
               style: TextStyle(
                 fontSize: 50,
                 fontWeight: FontWeight.bold,
