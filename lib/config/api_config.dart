@@ -1,11 +1,18 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // 1. dotenv import 확인
 
 class ApiConfig {
   // 환경변수에서 API Base URL 가져오기
   static String get baseUrl {
-    final value = dotenv.env['API_BASE_URL'];
-    if (value == null || value.isEmpty) {
-      throw StateError('Missing API_BASE_URL in .env');
+    // 2. --dart-define 값을 먼저 확인
+    String value = const String.fromEnvironment('API_BASE_URL');
+    if (value.isEmpty) {
+      // 3. 값이 없으면(로컬 디버깅 시) .env 파일에서 로드
+      value = dotenv.env['API_BASE_URL'] ?? '';
+    }
+
+    if (value.isEmpty) {
+      throw StateError(
+          'Missing API_BASE_URL in .env or via --dart-define');
     }
     return value;
   }
@@ -41,5 +48,4 @@ class ApiConfig {
     'Accept': 'application/json',
   };
 }
-
 

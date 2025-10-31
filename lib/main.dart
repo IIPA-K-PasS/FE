@@ -1,4 +1,5 @@
 import 'package:billow/features/landing/presentation/splash_screen.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'features/home/presentation/home_screen.dart';
@@ -7,20 +8,33 @@ import 'features/tips/presentation/tips_screen.dart';
 import 'features/profile/presentation/profile_screen.dart';
 import 'features/auth/presentation/auth_test_screen.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
+  // 3. 로컬 디버깅을 위해 .env 파일 로드
+  await dotenv.load(fileName: ".env");
 
-  // .env 파일 로드
-  await dotenv.load(fileName: '.env');
+  if (kIsWeb) {
+    // --- 웹 환경일 경우 ---
+    // GitHub Actions의 --dart-define에서 JavaScript 키를 읽어옵니다.
+    const jsAppKey = String.fromEnvironment('KAKAO_JAVASCRIPT_APP_KEY');
+    if (jsAppKey.isEmpty) {
+      throw Exception('KAKAO_JAVASCRIPT_APP_KEY is not set via --dart-define');
+    }
+    KakaoSdk.init(javaScriptAppKey: jsAppKey);
+  } else {
+    // --- 모바일 (Android/iOS) 환경일 경우 ---
+    // --dart-define 값을 먼저 확인하고, 없으면 .env 파일에서 로드 (하이브리드 방식)
+    String nativeAppKey =
+    const String.fromEnvironment('KAKAO_NATIVE_APP_KEY');
+    if (nativeAppKey.isEmpty) {
+      nativeAppKey = dotenv.env['KAKAO_NATIVE_APP_KEY'] ?? '';
+    }
 
-  // 환경변수에서 카카오 네이티브 앱 키 가져오기
-  final kakaoNativeAppKey = dotenv.env['KAKAO_NATIVE_APP_KEY'];
-  if (kakaoNativeAppKey == null || kakaoNativeAppKey.isEmpty) {
-    throw Exception('KAKAO_NATIVE_APP_KEY is not set in .env file');
+    if (nativeAppKey.isEmpty) {
+      throw Exception('KAKAO_NATIVE_APP_KEY is not set in .env or via --dart-define');
+    }
+    KakaoSdk.init(nativeAppKey: nativeAppKey);
   }
-
-  KakaoSdk.init(nativeAppKey: kakaoNativeAppKey);
   runApp(const MyApp());
 }
 
@@ -94,60 +108,23 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
               );
             },
           ),
-          // 알림 아이콘을 포인트 초기화 버튼으로 대체 (테스트용)
           IconButton(
-            icon: const Icon(Icons.notifications_none, color: Colors.black54, size: 32),
-            tooltip: '포인트 초기화',
-            onPressed: () async {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.remove('green_point_override');
-              if (mounted) setState(() {}); // 즉시 반영(마이/홈)
-              // TODO: 디버깅/테스트 끝나면 이 기능은 disable 하세요~
-            },
+            icon: const Icon(Icons.notifications_none, color: Colors.black54),
+            tooltip: 'Notifications',
+            onPressed: () {},
           ),
-          Padding(
-            padding: const EdgeInsets.only(right: 20.0, left: 8.0),
-            child: CircleAvatar(
-              radius: 20,
-              backgroundColor: Colors.teal[50],
-              child: Text(
-                'Me',
-                style: TextStyle(
-                  color: Colors.teal[800],
-                  fontSize: 18,
-                ),
-              ),
-            ),
-          ),
+          const SizedBox(width: 24),
         ],
       ),
       body: _pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        selectedItemColor: Colors.teal  ,
-        unselectedItemColor: Colors.grey,
-        iconSize: 28,
-        selectedFontSize: 12,
-        unselectedFontSize: 12,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: '홈',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.emoji_events),
-            label: '챌린지',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.lightbulb),
-            label: '자취꿀팁',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: '마이페이지',
-          ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: _onItemTapped,
+        destinations: const [
+          NavigationDestination(icon: Icon(Icons.home_outlined), label: '홈'),
+          NavigationDestination(icon: Icon(Icons.emoji_events_outlined), label: '챌린지'),
+          NavigationDestination(icon: Icon(Icons.lightbulb_outline), label: '꿀팁'),
+          NavigationDestination(icon: Icon(Icons.person_outline), label: '마이'),
         ],
       ),
     );
