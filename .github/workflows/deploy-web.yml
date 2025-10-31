@@ -21,9 +21,8 @@ jobs:
       - name: ☕ Set up Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-
           channel: stable
-          flutter-version: '3.24.2'
+          flutter-version: '3.27.1'
 
       - name: 🌐 Enable Web
         run: flutter config --enable-web
