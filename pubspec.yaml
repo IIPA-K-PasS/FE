@@ -65,6 +65,13 @@ dev_dependencies:
   flutter_lints: ^3.0.0
   build_runner: ^2.4.6
   json_serializable: ^6.7.1
+  flutter_launcher_icons: "^0.14.4"
+
+flutter_launcher_icons:
+  android: "launcher_icon" # Android 아이콘 활성화 및 이름 설정 (res/mipmap-xxxhdi/launcher_icon.png)
+  ios: true              # iOS 아이콘 활성화
+  image_path: "assets/images/billow_logo.png" # 준비한 아이콘 이미지 경로 (예시)
+  min_sdk_android: 21
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
