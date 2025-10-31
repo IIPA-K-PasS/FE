@@ -25,6 +25,7 @@ jobs:
 
       - name: 🏗️ Build Web App
         run: |
+          flutter clean
           flutter build web \
             --release \
             --base-href "/FE/" \
@@ -36,6 +37,9 @@ jobs:
 
       - name: 🔐 Inject Kakao SDK and JS Key
         run: |
+          echo "📝 Checking index.html before injection..."
+          head -30 ./build/web/index.html
+          
           python3 << 'EOF'
           import os
           
@@ -44,9 +48,13 @@ jobs:
               print('❌ KAKAO_JAVASCRIPT_KEY is not set')
               exit(1)
           
+          print(f'✅ JS_KEY received: {JS_KEY[:10]}...')
+          
           index_path = './build/web/index.html'
           with open(index_path, 'r', encoding='utf-8') as f:
               content = f.read()
+          
+          print(f'📄 index.html size: {len(content)} bytes')
           
           # Kakao SDK 및 초기화 스크립트
           kakao_script = f'''<script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
@@ -71,6 +79,7 @@ jobs:
           # </head> 앞에 주입
           if '</head>' in content:
               content = content.replace('</head>', f'{kakao_script}\n  </head>', 1)
+              print('✅ Kakao script injected successfully')
           else:
               print('❌ </head> tag not found in index.html')
               exit(1)
@@ -80,6 +89,9 @@ jobs:
           
           print('✅ Kakao SDK and JS key injected')
           EOF
+          
+          echo "📝 Checking index.html after injection..."
+          head -50 ./build/web/index.html
         env:
           JS_KEY: ${{ secrets.KAKAO_JAVASCRIPT_KEY }}
 
