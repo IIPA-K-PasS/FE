@@ -188,6 +188,8 @@ jobs:
           sed -i "s|flutter_bootstrap.js|flutter_bootstrap.js?v=${GITHUB_RUN_NUMBER}|" ./build/web/index.html || true
           # main.dart.js 캐시 무효화 (새 템플릿에선 bootstrap에서 로드하지만 방어적으로 처리)
           sed -i "s|main.dart.js|main.dart.js?v=${GITHUB_RUN_NUMBER}|" ./build/web/index.html || true
+          # HTML 자체 캐시 방지 메타 추가
+          sed -i "s|</head>|  <meta http-equiv=\"Cache-Control\" content=\"no-store, no-cache, must-revalidate, max-age=0\">\n  <meta http-equiv=\"Pragma\" content=\"no-cache\">\n  <meta http-equiv=\"Expires\" content=\"0\">\n</head>|" ./build/web/index.html || true
           # SW 파일 제거로 등록 방지 (Flutter는 파일 존재시 등록)
           rm -f ./build/web/flutter_service_worker.js || true
           # 버전 파일 제거 (강제 재로드 유도)
@@ -199,4 +201,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build/web
+          publish_branch: gh-pages
+          force_orphan: true
+          keep_files: false
 
