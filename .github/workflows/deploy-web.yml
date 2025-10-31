@@ -1,40 +1,34 @@
 name: Deploy Flutter Web to GitHub Pages
-
 on:
   push:
-    branches: [ "kpaasTest" ] # 1. 'develop'에서 'kpaasTest'로 변경했습니다.
-
+    branches: [ "kpaasTest" ]
+    
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
-    # gh-pages 브랜치에 쓰기 권한 부여
+    
     permissions:
       contents: write
+    
     steps:
-      # 2. 레포지토리 코드 가져오기
       - name: 📦 Checkout Repository
         uses: actions/checkout@v4
-
-      # 3. Flutter 환경 설정
+      
       - name: ☕ Set up Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          # '3.35.7'은 유효한 버전이 아닙니다. 'stable' 채널을 사용합니다.
-          channel: 'stable' 
-
-      # 4. Flutter Web 활성화 (기존 'flutter create' 대신 사용)
+          channel: 'stable'
+      
       - name: 🌐 Enable Flutter Web
         run: flutter config --enable-web
-
-      # 5. 프로젝트 의존성 설치
+      
       - name: 🧩 Get Dependencies
         run: flutter pub get
-
-      # 6. Build Web App (환경 변수 주입 및 HTML 렌더러 사용)
+      
+      # ⭐ --web-renderer=html 옵션 제거!
       - name: 🏗️ Build Web App
         run: |
           flutter build web --release \
-            --web-renderer=html \
             --base-href "/FE/" \
             --dart-define=API_BASE_URL="${{ secrets.API_BASE_URL }}" \
             --dart-define=KAKAO_NATIVE_APP_KEY="${{ secrets.KAKAO_NATIVE_APP_KEY }}" \
@@ -42,8 +36,7 @@ jobs:
             --dart-define=NAVER_CLIENT_ID="${{ secrets.NAVER_CLIENT_ID }}" \
             --dart-define=NAVER_CLIENT_SECRET="${{ secrets.NAVER_CLIENT_SECRET }}" \
             --dart-define=OPENWEATHERMAP_API_KEY="${{ secrets.OPENWEATHERMAP_API_KEY }}"
-
-      # 7. 빌드 결과물을 GitHub Pages에 배포
+      
       - name: 🚀 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
