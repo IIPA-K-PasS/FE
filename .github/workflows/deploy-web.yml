@@ -18,11 +18,12 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          flutter-version: '3.27.1'  # ⭐ 핵심 수정
+          flutter-version: '3.27.1' # 사용하시던 버전 유지
 
       - name: 🧩 Get Dependencies
         run: flutter pub get
 
+      # ⭐ .env 파일 생성 대신 --dart-define을 사용 (올바른 방법입니다)
       - name: 🏗️ Build Web App
         run: |
           flutter clean
@@ -35,7 +36,8 @@ jobs:
             --dart-define=NAVER_CLIENT_SECRET="${{ secrets.NAVER_CLIENT_SECRET }}" \
             --dart-define=OPENWEATHERMAP_API_KEY="${{ secrets.OPENWEATHERMAP_API_KEY }}"
 
-      - name: 🔐 Inject Kakao SDK and JS Key
+      # ⭐ 핵심 수정: Python 스크립트가 기존 CSP를 '수정'하도록 변경
+      - name: 🔐 Modify CSP and Inject Kakao SDK
         run: |
           python3 << 'EOF'
           import os
@@ -43,69 +45,112 @@ jobs:
           
           JS_KEY = os.environ.get('JS_KEY', '')
           if not JS_KEY:
-              print('❌ KAKAO_JAVASCRIPT_KEY is not set')
+              print('❌ KAKAO_JAVASCRIPT_KEY secret이 설정되지 않았습니다.')
               exit(1)
           
-          print(f'✅ JS_KEY received: {JS_KEY[:10]}...')
+          print(f'✅ JS_KEY 수신됨: {JS_KEY[:10]}...')
           
           index_path = './build/web/index.html'
-          with open(index_path, 'r', encoding='utf-8') as f:
-              content = f.read()
+          try:
+              with open(index_path, 'r', encoding='utf-8') as f:
+                  content = f.read()
+          except FileNotFoundError:
+              print(f'❌ {index_path} 파일을 찾을 수 없습니다. 빌드 단계가 실패했는지 확인하세요.')
+              exit(1)
+
+          print(f'📄 index.html 원본 크기: {len(content)} bytes')
+
+          # --- 1. CSP 태그 수정 (핵심 변경 사항) ---
+          csp_pattern = re.compile(r'(<meta http-equiv="Content-Security-Policy" content=")(.*?)(">)')
+          match = csp_pattern.search(content)
           
-          print(f'📄 index.html size before: {len(content)} bytes')
+          if match:
+              print("✅ Flutter가 생성한 기존 CSP 태그를 찾았습니다.")
+              original_csp_content = match.group(2)
+              new_csp_content = original_csp_content
+              
+              # script-src에 'unsafe-eval' 및 Kakao 도메인 추가
+              script_src_pattern = re.compile(r"(script-src\s+)([^;]+)")
+              if script_src_pattern.search(new_csp_content):
+                  new_csp_content = script_src_pattern.sub(
+                      r"\1\2 'unsafe-eval' https://developers.kakao.com https://*.kakao.com", 
+                      new_csp_content
+                  )
+                  print("✅ script-src에 'unsafe-eval'과 Kakao 도메인을 추가했습니다.")
+              else:
+                  # script-src가 없는 경우 (드묾)
+                  new_csp_content += "; script-src 'self' 'unsafe-eval' https://developers.kakao.com https://*.kakao.com"
+                  print("⚠️ script-src를 찾지 못해 새로 추가합니다.")
+
+              # connect-src에 Kakao 도메인 추가
+              connect_src_pattern = re.compile(r"(connect-src\s+)([^;]+)")
+              if connect_src_pattern.search(new_csp_content):
+                  new_csp_content = connect_src_pattern.sub(
+                      r"\1\2 https://kauth.kakao.com https://*.kakao.com", 
+                      new_csp_content
+                  )
+                  print("✅ connect-src에 Kakao 도메인을 추가했습니다.")
+              else:
+                  new_csp_content += "; connect-src 'self' https://kauth.kakao.com https://*.kakao.com"
+                  print("⚠️ connect-src를 찾지 못해 새로 추가합니다.")
+
+              # 수정한 CSP 내용으로 원본 HTML 교체
+              content = csp_pattern.sub(f'\\1{new_csp_content}\\3', content)
+              print("✅ CSP 메타 태그 수정 완료.")
           
-          # CSP 메타 태그 추가 (Kakao SDK의 eval 허용)
-          csp_meta = '<meta http-equiv="Content-Security-Policy" content="script-src \'self\' \'unsafe-eval\' \'unsafe-inline\' https://developers.kakao.com https://*.kakao.com; connect-src \'self\' https://developers.kakao.com https://*.kakao.com https://kauth.kakao.com">'
-          
-          # </head> 앞에 CSP 추가 (이미 있으면 추가 안 함)
-          if 'Content-Security-Policy' not in content:
+          else:
+              print("⚠️ Flutter가 생성한 CSP 태그를 찾지 못했습니다. 새 태그를 주입합니다. (비권장)")
+              # 기존 로직(Fallback)
+              csp_meta = '<meta http-equiv="Content-Security-Policy" content="script-src \'self\' \'unsafe-eval\' \'unsafe-inline\' https://developers.kakao.com https://*.kakao.com; connect-src \'self\' https://developers.kakao.com https://*.kakao.com https://kauth.kakao.com">'
               content = content.replace('</head>', f'  {csp_meta}\n</head>', 1)
-              print('✅ CSP meta tag added')
+
+          # --- 2. Kakao SDK 스크립트 주입 (기존 로직 유지) ---
           
-          # 기존 Kakao 스크립트 제거 (플레이스홀더 포함)
+          # 혹시 모를 기존 플레이스홀더 스크립트 제거
           pattern = r'<script src="https://developers\.kakao\.com/sdk/js/kakao\.js"></script>.*?window\.kakaoLogin = kakaoLogin;[\s\S]*?</script>'
           content = re.sub(pattern, '', content, flags=re.DOTALL)
+          print("ℹ️ 기존 카카오 스크립트(플레이스홀더) 제거 시도")
           
-          print(f'📄 index.html size after removal: {len(content)} bytes')
-          
-          # 새 Kakao SDK 및 초기화 스크립트 추가
           kakao_script = f'''<script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
           <script>
             (function initKakao() {{
               try {{
                 Kakao.init('{JS_KEY}');
-                console.log('Kakao init:', Kakao.isInitialized());
-              }} catch (e) {{ console.error('Kakao init failed:', e); }}
+                console.log('Kakao SDK init:', Kakao.isInitialized());
+              }} catch (e) {{ console.error('Kakao SDK init failed:', e); }}
             }})();
             
             function kakaoLogin() {{
               try {{
+                console.log('kakaoLogin() 호출됨. 리디렉션 시도...');
                 Kakao.Auth.authorize({{
                   redirectUri: 'https://iipa-k-pass.github.io/FE/auth/callback'
                 }});
-              }} catch (e) {{ console.error('Kakao authorize failed:', e); }}
+              }} catch (e) {{ console.error('Kakao.Auth.authorize failed:', e); }}
             }}
             window.kakaoLogin = kakaoLogin;
+            console.log('window.kakaoLogin이 전역에 설정되었습니다.');
           </script>'''
           
-          # </head> 앞에 주입
           if '</head>' in content:
               content = content.replace('</head>', f'{kakao_script}\n  </head>', 1)
-              print('✅ Kakao script injected successfully')
+              print('✅ Kakao SDK 스크립트를 </head> 직전에 주입했습니다.')
           else:
-              print('❌ </head> tag not found in index.html')
+              print('❌ </head> 태그를 찾지 못해 스크립트 주입에 실패했습니다.')
               exit(1)
           
           with open(index_path, 'w', encoding='utf-8') as f:
               f.write(content)
           
-          print('✅ Kakao SDK and JS key injected')
+          print(f'📄 index.html 수정 완료. 최종 크기: {len(content)} bytes')
           EOF
         env:
-          JS_KEY: ${{ secrets.KAKAO_JAVASCRIPT_KEY }}
+          JS_KEY: ${{ secrets.KAKAO_JAVASCRIPT_KEY }} # GitHub Secret 이름 확인
 
+      # --- 3. 배포 (기존과 동일) ---
       - name: 🚀 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build/web
+
