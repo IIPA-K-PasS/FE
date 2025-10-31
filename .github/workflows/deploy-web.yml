@@ -21,7 +21,7 @@ jobs:
       - name: ☕ Set up Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          channel: '3.19.0'
 
       # 4. Flutter 웹 설정 및 파일 생성
       - name: 🌐 Configure Flutter for Web
