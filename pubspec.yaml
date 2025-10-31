@@ -80,7 +80,6 @@ flutter:
     - assets/images/
     - assets/images/tips/
     - assets/images/onboarding/
-    - .env
 
   # To add assets to your application, add an assets section, like this:
   # assets:
