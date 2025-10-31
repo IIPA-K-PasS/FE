@@ -197,7 +197,7 @@ jobs:
 
       # --- 4. 배포 (force_orphan 유지) ---
       - name: 🚀 Deploy to GitHub Pages
-        uses: peace-iris/actions-gh-pages@v4 # ⭐ v3에서 v4로 버전 변경
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build/web
