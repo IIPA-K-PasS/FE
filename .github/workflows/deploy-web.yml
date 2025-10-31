@@ -45,6 +45,11 @@ jobs:
             --dart-define=NAVER_CLIENT_SECRET="${{ secrets.NAVER_CLIENT_SECRET }}" \
             --dart-define=OPENWEATHERMAP_API_KEY="${{ secrets.OPENWEATHERMAP_API_KEY }}"
 
+      - name: 🔍 Check built index.html
+        run: |
+          echo "📋 빌드된 index.html 내용:"
+          cat ./build/web/index.html
+
       - name: 🔐 Modify CSP and Inject Kakao SDK
         run: |
           python3 << 'EOF'
@@ -183,6 +188,11 @@ jobs:
           EOF
         env:
           JS_KEY: ${{ secrets.KAKAO_JAVASCRIPT_APP_KEY }} # GitHub Secret 이름 확인
+
+      - name: 🔍 Verify modified index.html
+        run: |
+          echo "📋 수정된 index.html 내용:"
+          cat ./build/web/index.html
 
       # --- 3. 캐시 무효화 (실제 HTML 구조에 맞춤) ---
       - name: ♻️ Bust cache and disable Service Worker
