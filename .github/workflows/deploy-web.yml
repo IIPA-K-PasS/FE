@@ -173,6 +173,18 @@ jobs:
         env:
           JS_KEY: ${{ secrets.KAKAO_JAVASCRIPT_KEY }} # GitHub Secret 이름 확인
 
+      # --- 3. 캐시 무효화 및 SW 비활성화 ---
+      - name: ♻️ Bust cache and disable Service Worker
+        run: |
+          # flutter_bootstrap.js 캐시 무효화 쿼리 추가
+          sed -i "s|flutter_bootstrap.js|flutter_bootstrap.js?v=${GITHUB_RUN_NUMBER}|" ./build/web/index.html || true
+          # main.dart.js 캐시 무효화 (새 템플릿에선 bootstrap에서 로드하지만 방어적으로 처리)
+          sed -i "s|main.dart.js|main.dart.js?v=${GITHUB_RUN_NUMBER}|" ./build/web/index.html || true
+          # SW 파일 제거로 등록 방지 (Flutter는 파일 존재시 등록)
+          rm -f ./build/web/flutter_service_worker.js || true
+          # 버전 파일 제거 (강제 재로드 유도)
+          rm -f ./build/web/version.json || true
+
       # --- 3. 배포 (기존과 동일) ---
       - name: 🚀 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
