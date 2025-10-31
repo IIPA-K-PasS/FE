@@ -72,7 +72,7 @@ jobs:
           match = csp_pattern.search(content)
           
           if match:
-              print("✅ Flutter가 생성한 기존 CSP 태그를 찾았습니다.")
+              print("✅ Flutter가 생성한 기존 CSP 태G 태그를 찾았습니다.")
               original_csp_content = match.group(2)
               print(f"ℹ️ 발견된 원본 CSP: {original_csp_content}")
               
@@ -197,7 +197,7 @@ jobs:
 
       # --- 4. 배포 (force_orphan 유지) ---
       - name: 🚀 Deploy to GitHub Pages
-        uses: peace-iris/actions-gh-pages@v3
+        uses: peace-iris/actions-gh-pages@v4 # ⭐ v3에서 v4로 버전 변경
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build/web
