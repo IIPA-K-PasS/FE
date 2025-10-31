@@ -27,7 +27,6 @@ jobs:
         run: |
           flutter build web \
             --release \
-            --web-renderer html \
             --base-href "/FE/" \
             --dart-define=API_BASE_URL="${{ secrets.API_BASE_URL }}" \
             --dart-define=KAKAO_NATIVE_APP_KEY="${{ secrets.KAKAO_NATIVE_APP_KEY }}" \
