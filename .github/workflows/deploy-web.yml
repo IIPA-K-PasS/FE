@@ -34,12 +34,54 @@ jobs:
             --dart-define=NAVER_CLIENT_SECRET="${{ secrets.NAVER_CLIENT_SECRET }}" \
             --dart-define=OPENWEATHERMAP_API_KEY="${{ secrets.OPENWEATHERMAP_API_KEY }}"
 
-      - name: 🔐 Inject Kakao JS Key into index.html
+      - name: 🔐 Inject Kakao SDK and JS Key
         run: |
-          JS_KEY="${{ secrets.KAKAO_JAVASCRIPT_KEY }}"
-          ESCAPED_KEY=$(echo "$JS_KEY" | sed 's/[\/&]/\\&/g')
-          sed -i "s|__KAKAO_JS_KEY__|$ESCAPED_KEY|g" ./build/web/index.html
-          echo "✅ Kakao JS key injected"
+          python3 << 'EOF'
+          import os
+          
+          JS_KEY = os.environ.get('JS_KEY', '')
+          if not JS_KEY:
+              print('❌ KAKAO_JAVASCRIPT_KEY is not set')
+              exit(1)
+          
+          index_path = './build/web/index.html'
+          with open(index_path, 'r', encoding='utf-8') as f:
+              content = f.read()
+          
+          # Kakao SDK 및 초기화 스크립트
+          kakao_script = f'''<script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+          <script>
+            (function initKakao() {{
+              try {{
+                Kakao.init('{JS_KEY}');
+                console.log('Kakao init:', Kakao.isInitialized());
+              }} catch (e) {{ console.error('Kakao init failed:', e); }}
+            }})();
+            
+            function kakaoLogin() {{
+              try {{
+                Kakao.Auth.authorize({{
+                  redirectUri: 'https://iipa-k-pass.github.io/FE/auth/callback'
+                }});
+              }} catch (e) {{ console.error('Kakao authorize failed:', e); }}
+            }}
+            window.kakaoLogin = kakaoLogin;
+          </script>'''
+          
+          # </head> 앞에 주입
+          if '</head>' in content:
+              content = content.replace('</head>', f'{kakao_script}\n  </head>', 1)
+          else:
+              print('❌ </head> tag not found in index.html')
+              exit(1)
+          
+          with open(index_path, 'w', encoding='utf-8') as f:
+              f.write(content)
+          
+          print('✅ Kakao SDK and JS key injected')
+          EOF
+        env:
+          JS_KEY: ${{ secrets.KAKAO_JAVASCRIPT_KEY }}
 
       - name: 🚀 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
