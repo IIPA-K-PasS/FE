@@ -23,6 +23,14 @@ jobs:
       - name: 🧩 Get Dependencies
         run: flutter pub get
 
+      # 로컬 개발을 단순화하기 위해 .env를 자산으로 포함시킴.
+      # CI에서는 시크릿으로 .env 파일을 생성해 빌드 시 파일 누락을 방지한다.
+      - name: ✍️ Create .env for build
+        run: |
+          cat > .env << 'EOF'
+          KAKAO_NATIVE_APP_KEY=${{ secrets.KAKAO_NATIVE_APP_KEY }}
+          EOF
+
       - name: 🏗️ Build Web App
         run: |
           flutter clean
