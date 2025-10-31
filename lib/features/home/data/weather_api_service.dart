@@ -64,6 +64,7 @@ class WeatherApiService {
       throw Exception(
           'Failed to load weather data. Status: ${response.statusCode}, Body: ${utf8.decode(response.bodyBytes)}');
     }
+    return null;
   }
 }
 

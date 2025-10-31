@@ -1,6 +1,5 @@
-import 'package:billow/features/landing/presentation/splash_screen.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'features/home/presentation/home_screen.dart';
 import 'features/challenge/presentation/challenge_screen.dart';
@@ -59,30 +58,13 @@ class MyApp extends StatelessWidget {
       home: const SplashScreen(),
     );
   }
+  KakaoSdk.init(nativeAppKey: kakaoKey);
+
+  runApp(const BillowApp());
 }
 
-class MainNavigationPage extends StatefulWidget {
-  const MainNavigationPage({super.key});
-
-  @override
-  State<MainNavigationPage> createState() => _MainNavigationPageState();
-}
-
-class _MainNavigationPageState extends State<MainNavigationPage> {
-  int _selectedIndex = 0;
-
-  final List<Widget> _pages = [
-    const HomeScreen(),
-    const ChallengeScreen(),
-    const TipsScreen(),
-    const ProfileScreen(),
-  ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
+class BillowApp extends StatelessWidget {
+  const BillowApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -127,6 +109,18 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           NavigationDestination(icon: Icon(Icons.person_outline), label: '마이'),
         ],
       ),
+    );
+
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: theme,
+      home: const SplashScreen(),
+      onGenerateRoute: (settings) {
+        if (settings.name == '/auth/callback') {
+          return MaterialPageRoute(builder: (_) => const KakaoWebCallbackScreen());
+        }
+        return null;
+      },
     );
   }
 }

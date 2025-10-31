@@ -1,0 +1,61 @@
+# .github/workflows/deploy-flutter-web.yml
+
+name: Deploy Flutter Web to GitHub Pages
+
+on:
+  push:
+    branches: [ "feature/test-1" ] # develop 브랜치에 푸시될 때 실행
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    
+    # gh-pages 브랜치에 쓰기 권한 부여
+    permissions:
+      contents: write  
+    
+    steps:
+      # 1. 레포지토리 코드 가져오기
+      - name: 📦 Checkout Repository
+        uses: actions/checkout@v4
+      
+      # 2. Flutter 환경 설정 (⭐ 수정됨)
+      # Flutter 버전을 고정하여 '--web-renderer' 옵션을 인식하도록 합니다.
+      - name: ☕ Set up Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.22.3' # 3.22.3 또는 3.24.x 등 최신 안정 버전 명시
+
+      # 3. .env 파일 생성 (원본 유지)
+      # 프로젝트에 필요한 Secret들을 .env 파일로 생성합니다.
+      - name: ✍️ Create .env file
+        run: |
+          echo "API_BASE_URL=${{ secrets.API_BASE_URL }}" >> .env
+          echo "KAKAO_NATIVE_APP_KEY=${{ secrets.KAKAO_NATIVE_APP_KEY }}" >> .env
+          echo "NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}" >> .env
+          echo "NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}" >> .env
+          echo "OPENWEATHERMAP_API_KEY=${{ secrets.OPENWEATHERMAP_API_KEY }}" >> .env
+          echo ".env 파일 생성 완료:"
+          cat .env # 생성된 파일 내용 확인 (키 값 자체는 마스킹 처리됨)
+
+      # 4. Flutter 웹 활성화 (⭐ 수정됨)
+      # 'flutter create' 대신 'flutter config'를 사용하여 웹 지원을 활성화합니다.
+      - name: 🌐 Enable Web
+        run: flutter config --enable-web
+
+      # 5. 프로젝트 의존성 설치
+      - name: 🧩 Get Dependencies
+        run: flutter pub get
+
+      # 6. Flutter 웹 앱 빌드 (⭐ 수정됨)
+      # '--web-renderer=html' 대신 '--web-renderer html' (공백)을 사용합니다.
+      - name: 🏗️ Build Web App
+        run: flutter build web --release --web-renderer html --base-href "/FE/"
+
+      # 7. 빌드 결과물을 GitHub Pages에 배포 (원본 유지)
+      - name: 🚀 Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web

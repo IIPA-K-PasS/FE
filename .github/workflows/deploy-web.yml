@@ -1,0 +1,52 @@
+name: web kakao api added
+
+on:
+  push:
+    branches: [ "kpaasTest" ] # 1. 'develop'에서 'kpaasTest'로 변경
+    
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    
+    # gh-pages 브랜치에 쓰기 권한 부여
+    permissions:
+      contents: write 
+    
+    steps:
+      # 2. 레포지토리 코드 가져오기
+      - name: 📦 Checkout Repository
+        uses: actions/checkout@v4
+      
+      # 3. Flutter 환경 설정
+      - name: ☕ Set up Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      # 4. Flutter 웹 설정 및 파일 생성
+      - name: 🌐 Configure Flutter for Web
+        run: flutter create . --platforms web
+        
+      # 5. 프로젝트 의존성 설치
+      - name: 🧩 Get Dependencies
+        run: flutter pub get
+        
+      # 6. Build Web App (환경 변수 주입 및 HTML 렌더러 사용)
+      - name: 🏗️ Build Web App
+        run: |
+          flutter build web --release \
+            --web-renderer=html \
+            --base-href "/FE/" \
+            --dart-define=API_BASE_URL="${{ secrets.API_BASE_URL }}" \
+            --dart-define=KAKAO_NATIVE_APP_KEY="${{ secrets.KAKAO_NATIVE_APP_KEY }}" \
+            --dart-define=KAKAO_JAVASCRIPT_APP_KEY="${{ secrets.KAKAO_JAVASCRIPT_APP_KEY }}" \
+            --dart-define=NAVER_CLIENT_ID="${{ secrets.NAVER_CLIENT_ID }}" \
+            --dart-define=NAVER_CLIENT_SECRET="${{ secrets.NAVER_CLIENT_SECRET }}" \
+            --dart-define=OPENWEATHERMAP_API_KEY="${{ secrets.OPENWEATHERMAP_API_KEY }}"
+        
+      # 7. 빌드 결과물을 GitHub Pages에 배포
+      - name: 🚀 Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web

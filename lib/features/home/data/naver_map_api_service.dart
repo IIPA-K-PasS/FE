@@ -56,8 +56,8 @@ class NaverMapApiService {
       Uri.parse(
           'https://maps.apigw.ntruss.com/map-geocode/v2/geocode?query=$query'),
       headers: {
-        'X-NCP-APIGW-API-KEY-ID': _clientId,
-        'X-NCP-APIGW-API-KEY': _clientSecret,
+        'X-NCP-APIGW-API-KEY-ID': id,
+        'X-NCP-APIGW-API-KEY': secret,
       },
     );
 
@@ -85,8 +85,8 @@ class NaverMapApiService {
       Uri.parse(
           'https://maps.apigw.ntruss.com/map-reversegeocode/v2/gc?coords=$lon,$lat&output=json'),
       headers: {
-        'X-NCP-APIGW-API-KEY-ID': _clientId,
-        'X-NCP-APIGW-API-KEY': _clientSecret,
+        'X-NCP-APIGW-API-KEY-ID': id,
+        'X-NCP-APIGW-API-KEY': secret,
       },
     );
 

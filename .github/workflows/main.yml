@@ -1,0 +1,46 @@
+name: Deploy Flutter Web to GitHub Pages
+on:
+  push:
+    branches: [ "develop" ]
+    
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write 
+    
+    steps:
+      - name: 📦 Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: ☕ Set up Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          
+      - name: ✍️ Create .env file
+        run: |
+          echo "API_BASE_URL=${{ secrets.API_BASE_URL }}" >> .env
+          echo "KAKAO_NATIVE_APP_KEY=${{ secrets.KAKAO_NATIVE_APP_KEY }}" >> .env
+          echo "NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}" >> .env
+          echo "NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}" >> .env
+          echo "OPENWEATHERMAP_API_KEY=${{ secrets.OPENWEATHERMAP_API_KEY }}" >> .env
+          echo ".env 파일 생성 완료:"
+          cat .env
+          
+      - name: 🌐 Configure Flutter for Web
+        run: flutter create . --platforms web
+        
+      - name: 🧩 Get Dependencies
+        run: flutter pub get
+        
+      # ⭐ --web-renderer 옵션 제거
+      - name: 🏗️ Build Web App
+        run: flutter build web --release --base-href "/FE/"
+        
+      - name: 🚀 Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web
