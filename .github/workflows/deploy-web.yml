@@ -19,17 +19,19 @@ jobs:
         with:
           channel: 'stable'
       
-      # ⭐ web 폴더가 없으면 생성
       - name: 🌐 Create Web Platform
         run: |
           if [ ! -d "web" ]; then
             flutter create . --platforms web
           fi
       
+      # ⭐ 빈 .env 파일 생성 (pubspec.yaml asset 오류 방지)
+      - name: 📄 Create Empty .env File
+        run: touch .env
+      
       - name: 🧩 Get Dependencies
         run: flutter pub get
       
-      # ⭐ web/index.html에 base href placeholder 추가
       - name: 📝 Add Base Href Placeholder
         run: |
           if ! grep -q 'FLUTTER_BASE_HREF' web/index.html; then
