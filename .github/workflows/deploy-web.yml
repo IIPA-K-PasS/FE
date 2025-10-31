@@ -37,11 +37,9 @@ jobs:
 
       - name: 🔐 Inject Kakao SDK and JS Key
         run: |
-          echo "📝 Checking index.html before injection..."
-          head -30 ./build/web/index.html
-          
           python3 << 'EOF'
           import os
+          import re
           
           JS_KEY = os.environ.get('JS_KEY', '')
           if not JS_KEY:
@@ -54,9 +52,15 @@ jobs:
           with open(index_path, 'r', encoding='utf-8') as f:
               content = f.read()
           
-          print(f'📄 index.html size: {len(content)} bytes')
+          print(f'📄 index.html size before: {len(content)} bytes')
           
-          # Kakao SDK 및 초기화 스크립트
+          # 기존 Kakao 스크립트 제거 (플레이스홀더 포함)
+          pattern = r'<script src="https://developers\.kakao\.com/sdk/js/kakao\.js"></script>.*?window\.kakaoLogin = kakaoLogin;[\s\S]*?</script>'
+          content = re.sub(pattern, '', content, flags=re.DOTALL)
+          
+          print(f'📄 index.html size after removal: {len(content)} bytes')
+          
+          # 새 Kakao SDK 및 초기화 스크립트 추가
           kakao_script = f'''<script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
           <script>
             (function initKakao() {{
@@ -89,9 +93,6 @@ jobs:
           
           print('✅ Kakao SDK and JS key injected')
           EOF
-          
-          echo "📝 Checking index.html after injection..."
-          head -50 ./build/web/index.html
         env:
           JS_KEY: ${{ secrets.KAKAO_JAVASCRIPT_KEY }}
 
