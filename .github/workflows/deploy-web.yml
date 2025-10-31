@@ -7,11 +7,9 @@ on:
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
-
     # gh-pages 브랜치에 쓰기 권한 부여
     permissions:
       contents: write
-
     steps:
       # 2. 레포지토리 코드 가져오기
       - name: 📦 Checkout Repository
@@ -21,11 +19,12 @@ jobs:
       - name: ☕ Set up Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.7'
+          # '3.35.7'은 유효한 버전이 아닙니다. 'stable' 채널을 사용합니다.
+          channel: 'stable' 
 
-      # 4. Flutter 웹 설정 및 파일 생성
-      - name: 🌐 Configure Flutter for Web
-        run: flutter create . --platforms web
+      # 4. Flutter Web 활성화 (기존 'flutter create' 대신 사용)
+      - name: 🌐 Enable Flutter Web
+        run: flutter config --enable-web
 
       # 5. 프로젝트 의존성 설치
       - name: 🧩 Get Dependencies
@@ -50,5 +49,3 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build/web
-
-
